@@ -1,3 +1,5 @@
+import java.util.Scanner;
+
 /**
  * Entry point for the Wodan chatbot.
  * Prints a few ASCII-art banner variations for the mixed-case name "Wodan".
@@ -11,21 +13,27 @@ public class Wodan {
                 + "    \\  /\\  / (_) | (_| | (_| | | | |\n"
                 + "     \\/  \\/ \\___/ \\__,_|\\__,_|_| |_|\n";
 
-        String message = String.format("""
-                ____________________________________________________________
-                
-                %s
-                Hello! I'm Wodan.
-                
-                What can I do for you?
-                
-                ____________________________________________________________
-                
-                Bye. Hope to see you again soon!
-                
-                ____________________________________________________________
-                """, banner);
+        String line = "    ____________________________________________________________";
 
-        System.out.println(message);
+        System.out.println(banner);
+        System.out.println(line);
+        System.out.println("     Hello! I'm Wodan.");
+        System.out.println("     What can I do for you?");
+        System.out.println(line);
+        System.out.println();
+        Scanner in = new Scanner(System.in);
+        while (true) {
+            String command = in.nextLine();
+            if (command.equals("bye")) {
+                System.out.println(line);
+                System.out.println("     Bye. Hope to see you again soon!");
+                System.out.println(line);
+                break;
+            }
+            System.out.println(line);
+            System.out.println("     " + command);
+            System.out.println(line);
+            System.out.println();
+        }
     }
 }
