@@ -19,8 +19,7 @@ public class Wodan {
         String line = "    ____________________________________________________________";
 
         // Array to store tasks
-        ArrayList<String> tasks = new ArrayList<String>();
-        int idx = 0;
+        ArrayList<Task> tasks = new ArrayList<Task>();
 
         System.out.println(banner);
         System.out.println(line);
@@ -29,28 +28,56 @@ public class Wodan {
         System.out.println(line);
         System.out.println();
         Scanner in = new Scanner(System.in);
+
         while (true) {
             String command = in.nextLine();
-            if (command.equals("bye")) {
+            String[] parts = command.split(" ");
+
+            if (parts[0].equals("mark")) {
+                int taskNumber = Integer.parseInt(parts[1]);
+                Task currTask = tasks.get(taskNumber - 1);
+                currTask.markAsDone();
+                System.out.println(line);
+                System.out.println("    One less burden to carry.");
+                System.out.printf("        [%s] %s", currTask.getStatusIcon(), currTask.getDescription());
+                System.out.println();
+                System.out.println(line);
+            }
+            else if (parts[0].equals("unmark")) {
+                int taskNumber = Integer.parseInt(parts[1]);
+                Task currTask = tasks.get(taskNumber - 1);
+                currTask.markAsUndone();
+                System.out.println(line);
+                System.out.println("    The ravens retract their approval.");
+                System.out.printf("        [%s] %s", currTask.getStatusIcon(), currTask.getDescription());
+                System.out.println();
+                System.out.println(line);
+            }
+            else if (command.equals("bye")) {
                 System.out.println(line);
                 System.out.println("     So it is written. Farewell, wanderer.");
                 System.out.println(line);
                 break;
             }
-            if (command.equals("list")) {
+            else if (command.equals("list")) {
                 System.out.println(line);
+                System.out.println("    The ravens have given these quests.\n");
                 for (int i = 0; i < tasks.size(); i++) {
-                    System.out.printf("     %d. %s%n", i + 1, tasks.get(i));
+                    Task currTask = tasks.get(i);
+                    System.out.printf("     %d. [%s] %s\n", i + 1, currTask.getStatusIcon(), currTask.getDescription());
                 }
                 System.out.println(line);
-                continue;
             }
-            System.out.println(line);
-            System.out.println("     " + command);
-            System.out.println(line);
-            System.out.println();
+            else {
+                System.out.println(line);
+                System.out.println("     " + command);
+                System.out.println(line);
+                System.out.println();
 
-            tasks.add(command);
+                tasks.add(
+                        new Task(command)
+                );
+            }
         }
     }
 }
