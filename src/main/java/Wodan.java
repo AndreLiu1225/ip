@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -29,119 +30,213 @@ public class Wodan {
         System.out.println();
         Scanner in = new Scanner(System.in);
 
+        label:
         while (true) {
             String command = in.nextLine();
-            String[] words = command.split(" ", 2);
-            String commandWord = words[0];
-            String arguments = words.length > 1 ? words[1] : "";
+            try {
+                if (command.trim().isEmpty()) {
+                    throw new WodanException(
+                            "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, or bye.");
+                }
 
-            if (commandWord.equals("unmark")) {
-                int taskNumber = Integer.parseInt(arguments.trim());
-                Task currTask = tasks.get(taskNumber - 1);
-                currTask.markAsUndone();
-                System.out.println(line);
-                System.out.println("    The ravens retract their approval.");
-                switch (currTask) {
-                    case Todo todo ->
-                            System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
-                    case Deadline deadline ->
-                            System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
-                    case Event event ->
-                            System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
-                    default -> {
+                String[] words = command.trim().split(" ", 2);
+                System.out.println(Arrays.toString(words));
+                String commandWord = words[0];
+                String arguments = words.length > 1 ? words[1] : "";
+
+                switch (commandWord) {
+                    case "unmark": {
+                        if (arguments.trim().isEmpty()) {
+                            throw new WodanException(
+                                    "Which quest should the ravens unmark? Try: unmark 2");
+                        }
+                        int taskNumber;
+                        try {
+                            taskNumber = Integer.parseInt(arguments.trim());
+                        } catch (NumberFormatException e) {
+                            throw new WodanException(
+                                    "'" + arguments.trim() + "' is not a quest number. Try: unmark 2");
+                        }
+                        if (tasks.isEmpty()) {
+                            throw new WodanException(
+                                    "There are no quests to unmark yet. Add one with todo, deadline, or event.");
+                        }
+                        if (taskNumber < 1 || taskNumber > tasks.size()) {
+                            throw new WodanException(
+                                    "There is no quest " + taskNumber + ". The ravens watch over " + tasks.size()
+                                            + (tasks.size() == 1 ? " quest" : " quests")
+                                            + ". Try a number from 1 to " + tasks.size() + ".");
+                        }
+                        Task currTask = tasks.get(taskNumber - 1);
+                        currTask.markAsUndone();
+                        System.out.println(line);
+                        System.out.println("    The ravens retract their approval.");
+                        switch (currTask) {
+                            case Todo todo ->
+                                    System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
+                            case Deadline deadline ->
+                                    System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
+                            case Event event ->
+                                    System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
+                            default -> {
+                            }
+                        }
+                        System.out.println(line);
+                        break;
                     }
+                    case "mark": {
+                        if (arguments.trim().isEmpty()) {
+                            throw new WodanException(
+                                    "Which quest should the ravens mark? Try: mark 2");
+                        }
+                        int taskNumber;
+                        try {
+                            taskNumber = Integer.parseInt(arguments.trim());
+                        } catch (NumberFormatException e) {
+                            throw new WodanException(
+                                    "'" + arguments.trim() + "' is not a quest number. Try: mark 2");
+                        }
+                        if (tasks.isEmpty()) {
+                            throw new WodanException(
+                                    "There are no quests to mark yet. Add one with todo, deadline, or event.");
+                        }
+                        if (taskNumber < 1 || taskNumber > tasks.size()) {
+                            throw new WodanException(
+                                    "There is no quest " + taskNumber + ". The ravens watch over " + tasks.size()
+                                            + (tasks.size() == 1 ? " quest" : " quests")
+                                            + ". Try a number from 1 to " + tasks.size() + ".");
+                        }
+                        Task currTask = tasks.get(taskNumber - 1);
+                        currTask.markAsDone();
+                        System.out.println(line);
+                        System.out.println("    One less burden to carry.");
+                        switch (currTask) {
+                            case Todo todo ->
+                                    System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
+                            case Deadline deadline ->
+                                    System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
+                            case Event event ->
+                                    System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
+                            default -> {
+                            }
+                        }
+                        System.out.println();
+                        System.out.println(line);
+                        break;
+                    }
+                    case "todo": {
+                        String description = arguments.trim();
+                        if (description.isEmpty()) {
+                            throw new WodanException(
+                                    "A todo needs a quest name. Try: todo borrow book");
+                        }
+                        Todo todo = new Todo(description);
+                        tasks.add(todo);
+                        System.out.println("    You have accepted the following quest:");
+                        System.out.printf("        [T] [ ] %s", description);
+                        System.out.println();
+                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println(line);
+                        break;
+                    }
+                    case "deadline": {
+                        String[] deadlineParts = arguments.split(" /by ", 2);
+                        String description = deadlineParts[0].trim();
+                        String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
+                        if (description.startsWith("/by")) {
+                            throw new WodanException(
+                                    "A deadline needs a quest name before /by. Try: deadline return book /by Sunday");
+                        }
+                        if (description.isEmpty()) {
+                            throw new WodanException(
+                                    "A deadline needs a quest name and /by <when>. Try: deadline return book /by Sunday");
+                        }
+                        if (deadlineParts.length < 2) {
+                            throw new WodanException(
+                                    "A deadline must include /by <when>. Try: deadline return book /by Sunday");
+                        }
+                        if (by.isEmpty()) {
+                            throw new WodanException(
+                                    "The ravens need a time after /by. Try: deadline return book /by Sunday");
+                        }
+                        Deadline deadline = new Deadline(description, by);
+                        tasks.add(deadline);
+                        System.out.println("    You have accepted the following quest:");
+                        System.out.printf("        [D] [ ] %s (by: %s)", description, by);
+                        System.out.println();
+                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println(line);
+                        break;
+                    }
+                    case "event": {
+                        String[] fromParts = arguments.split(" /from ", 2);
+                        String description = fromParts[0].trim();
+                        if (description.startsWith("/from")) {
+                            throw new WodanException(
+                                    "An event needs a quest name before /from. Try: event meeting /from Mon 2pm /to 4pm");
+                        }
+                        if (description.isEmpty()) {
+                            throw new WodanException(
+                                    "An event needs a name, /from <start>, and /to <end>. Try: event meeting /from Mon 2pm /to 4pm");
+                        }
+                        if (fromParts.length < 2) {
+                            throw new WodanException(
+                                    "An event must include /from <start> and /to <end>. Try: event meeting /from Mon 2pm /to 4pm");
+                        }
+                        String[] toParts = fromParts[1].split(" /to ", 2);
+                        String from = toParts[0].trim();
+                        String to = toParts.length > 1 ? toParts[1].trim() : "";
+                        if (from.isEmpty()) {
+                            throw new WodanException(
+                                    "The ravens need a start time after /from. Try: event meeting /from Mon 2pm /to 4pm");
+                        }
+                        if (toParts.length < 2) {
+                            throw new WodanException(
+                                    "An event must include /to <end>. Try: event meeting /from Mon 2pm /to 4pm");
+                        }
+                        if (to.isEmpty()) {
+                            throw new WodanException(
+                                    "The ravens need an end time after /to. Try: event meeting /from Mon 2pm /to 4pm");
+                        }
+                        Event event = new Event(description, from, to);
+                        tasks.add(event);
+                        System.out.println("    You have accepted the following quest:");
+                        System.out.printf("        [E] [ ] %s (from: %s to: %s)", description, from, to);
+                        System.out.println();
+                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println(line);
+                        break;
+                    }
+                    case "bye":
+                        System.out.println(line);
+                        System.out.println("     So it is written. Farewell, wanderer.");
+                        System.out.println(line);
+                        break label;
+                    case "list":
+                        System.out.println(line);
+                        System.out.println("    The ravens have given these quests.\n");
+                        for (int i = 0; i < tasks.size(); i++) {
+                            Task currTask = tasks.get(i);
+                            if (currTask instanceof Todo) {
+                                System.out.printf("     %d. [T] [%s] %s\n", i + 1, currTask.getStatusIcon(), currTask.getDescription());
+                            } else if (currTask instanceof Deadline) {
+                                Deadline deadline = (Deadline) currTask;
+                                System.out.printf("     %d. [D] [%s] %s (by: %s)\n", i + 1, deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
+                            } else if (currTask instanceof Event) {
+                                Event event = (Event) currTask;
+                                System.out.printf("     %d. [E] [%s] %s (from: %s to: %s)\n", i + 1, event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
+                            }
+                        }
+                        System.out.println(line);
+                        break;
+                    default:
+                        throw new WodanException(
+                                "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, or bye.");
                 }
+            } catch (WodanException e) {
                 System.out.println(line);
-            }
-            else if (commandWord.equals("mark")) {
-                int taskNumber = Integer.parseInt(arguments.trim());
-                Task currTask = tasks.get(taskNumber - 1);
-                currTask.markAsDone();
+                System.out.println("     " + e.getMessage());
                 System.out.println(line);
-                System.out.println("    One less burden to carry.");
-                switch (currTask) {
-                    case Todo todo ->
-                            System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
-                    case Deadline deadline ->
-                            System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
-                    case Event event ->
-                            System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
-                    default -> {
-                    }
-                }
-                System.out.println();
-                System.out.println(line);
-            }
-            else if (commandWord.equals("todo")) {
-                String description = arguments.trim();
-                Todo todo = new Todo(description);
-                tasks.add(todo);
-                System.out.println("    You have accepted the following quest:");
-                System.out.printf("        [T] [ ] %s", description);
-                System.out.println();
-                System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(line);
-            }
-            else if (commandWord.equals("deadline")) {
-                String[] deadlineParts = arguments.split(" /by ", 2);
-                String description = deadlineParts[0].trim();
-                String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
-                Deadline deadline = new Deadline(description, by);
-                tasks.add(deadline);
-                System.out.println("    You have accepted the following quest:");
-                System.out.printf("        [D] [ ] %s (by: %s)", description, by);
-                System.out.println();
-                System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(line);
-            }
-            else if (commandWord.equals("event")) {
-                String[] fromParts = arguments.split(" /from ", 2);
-                String description = fromParts[0].trim();
-                String from = "";
-                String to = "";
-                if (fromParts.length > 1) {
-                    String[] toParts = fromParts[1].split(" /to ", 2);
-                    from = toParts[0].trim();
-                    to = toParts.length > 1 ? toParts[1].trim() : "";
-                }
-                Event event = new Event(description, from, to);
-                tasks.add(event);
-                System.out.println("    You have accepted the following quest:");
-                System.out.printf("        [E] [ ] %s (from: %s to: %s)", description, from, to);
-                System.out.println();
-                System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                System.out.println(line);
-            }
-            else if (command.equals("bye")) {
-                System.out.println(line);
-                System.out.println("     So it is written. Farewell, wanderer.");
-                System.out.println(line);
-                break;
-            }
-            else if (command.equals("list")) {
-                System.out.println(line);
-                System.out.println("    The ravens have given these quests.\n");
-                for (int i = 0; i < tasks.size(); i++) {
-                    Task currTask = tasks.get(i);
-                    if (currTask instanceof Todo) {
-                        System.out.printf("     %d. [T] [%s] %s\n", i + 1, currTask.getStatusIcon(), currTask.getDescription());
-                    }
-                    else if (currTask instanceof Deadline) {
-                        Deadline deadline = (Deadline) currTask;
-                        System.out.printf("     %d. [D] [%s] %s (by: %s)\n", i + 1, deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
-                    }
-                    else if (currTask instanceof Event) {
-                        Event event = (Event) currTask;
-                        System.out.printf("     %d. [E] [%s] %s (from: %s to: %s)\n", i + 1, event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
-                    }
-                }
-                System.out.println(line);
-            }
-            else {
-                System.out.println(line);
-                System.out.println("     " + command);
-                System.out.println(line);
-                System.out.println();
             }
         }
     }
