@@ -31,26 +31,85 @@ public class Wodan {
 
         while (true) {
             String command = in.nextLine();
-            String[] parts = command.split(" ");
+            String[] words = command.split(" ", 2);
+            String commandWord = words[0];
+            String arguments = words.length > 1 ? words[1] : "";
 
-            if (parts[0].equals("mark")) {
-                int taskNumber = Integer.parseInt(parts[1]);
-                Task currTask = tasks.get(taskNumber - 1);
-                currTask.markAsDone();
-                System.out.println(line);
-                System.out.println("    One less burden to carry.");
-                System.out.printf("        [%s] %s", currTask.getStatusIcon(), currTask.getDescription());
-                System.out.println();
-                System.out.println(line);
-            }
-            else if (parts[0].equals("unmark")) {
-                int taskNumber = Integer.parseInt(parts[1]);
+            if (commandWord.equals("unmark")) {
+                int taskNumber = Integer.parseInt(arguments.trim());
                 Task currTask = tasks.get(taskNumber - 1);
                 currTask.markAsUndone();
                 System.out.println(line);
                 System.out.println("    The ravens retract their approval.");
-                System.out.printf("        [%s] %s", currTask.getStatusIcon(), currTask.getDescription());
+                switch (currTask) {
+                    case Todo todo ->
+                            System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
+                    case Deadline deadline ->
+                            System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
+                    case Event event ->
+                            System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
+                    default -> {
+                    }
+                }
+                System.out.println(line);
+            }
+            else if (commandWord.equals("mark")) {
+                int taskNumber = Integer.parseInt(arguments.trim());
+                Task currTask = tasks.get(taskNumber - 1);
+                currTask.markAsDone();
+                System.out.println(line);
+                System.out.println("    One less burden to carry.");
+                switch (currTask) {
+                    case Todo todo ->
+                            System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
+                    case Deadline deadline ->
+                            System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
+                    case Event event ->
+                            System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
+                    default -> {
+                    }
+                }
                 System.out.println();
+                System.out.println(line);
+            }
+            else if (commandWord.equals("todo")) {
+                String description = arguments.trim();
+                Todo todo = new Todo(description);
+                tasks.add(todo);
+                System.out.println("    You have accepted the following quest:");
+                System.out.printf("        [T] [ ] %s", description);
+                System.out.println();
+                System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
+                System.out.println(line);
+            }
+            else if (commandWord.equals("deadline")) {
+                String[] deadlineParts = arguments.split(" /by ", 2);
+                String description = deadlineParts[0].trim();
+                String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
+                Deadline deadline = new Deadline(description, by);
+                tasks.add(deadline);
+                System.out.println("    You have accepted the following quest:");
+                System.out.printf("        [D] [ ] %s (by: %s)", description, by);
+                System.out.println();
+                System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
+                System.out.println(line);
+            }
+            else if (commandWord.equals("event")) {
+                String[] fromParts = arguments.split(" /from ", 2);
+                String description = fromParts[0].trim();
+                String from = "";
+                String to = "";
+                if (fromParts.length > 1) {
+                    String[] toParts = fromParts[1].split(" /to ", 2);
+                    from = toParts[0].trim();
+                    to = toParts.length > 1 ? toParts[1].trim() : "";
+                }
+                Event event = new Event(description, from, to);
+                tasks.add(event);
+                System.out.println("    You have accepted the following quest:");
+                System.out.printf("        [E] [ ] %s (from: %s to: %s)", description, from, to);
+                System.out.println();
+                System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
                 System.out.println(line);
             }
             else if (command.equals("bye")) {
@@ -64,7 +123,17 @@ public class Wodan {
                 System.out.println("    The ravens have given these quests.\n");
                 for (int i = 0; i < tasks.size(); i++) {
                     Task currTask = tasks.get(i);
-                    System.out.printf("     %d. [%s] %s\n", i + 1, currTask.getStatusIcon(), currTask.getDescription());
+                    if (currTask instanceof Todo) {
+                        System.out.printf("     %d. [T] [%s] %s\n", i + 1, currTask.getStatusIcon(), currTask.getDescription());
+                    }
+                    else if (currTask instanceof Deadline) {
+                        Deadline deadline = (Deadline) currTask;
+                        System.out.printf("     %d. [D] [%s] %s (by: %s)\n", i + 1, deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
+                    }
+                    else if (currTask instanceof Event) {
+                        Event event = (Event) currTask;
+                        System.out.printf("     %d. [E] [%s] %s (from: %s to: %s)\n", i + 1, event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
+                    }
                 }
                 System.out.println(line);
             }
@@ -73,10 +142,6 @@ public class Wodan {
                 System.out.println("     " + command);
                 System.out.println(line);
                 System.out.println();
-
-                tasks.add(
-                        new Task(command)
-                );
             }
         }
     }

@@ -24,6 +24,13 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
 # Project-specific requirements
 
+## After each code update
+
+After changing application code (or chatbot output), do both of the following before considering the work done:
+
+1. Update `test/ui-test-plan.md` if needed — add, remove, or adjust test cases so each case still records its **aim**, **inputs**, and **expected output** for the current behaviour.
+2. Invoke the `test-ui` skill (read `.cursor/skills/test-ui/SKILL.md` and follow it). That skill runs the program against the plan, shows the console input/output record, and stops immediately on the first failure with actual vs expected output.
+
 ## Java version:
 
 Ensure that Java 25 is used when running the application or build tasks. On macOS, use `sdk use java 25.0.3.fx-zulu` to switch to Java 25 if needed.
