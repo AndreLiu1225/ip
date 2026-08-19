@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Scanner;
 
 /**
@@ -36,26 +35,55 @@ public class Wodan {
             try {
                 if (command.trim().isEmpty()) {
                     throw new WodanException(
-                            "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, or bye.");
+                            "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, or bye.");
                 }
 
                 String[] words = command.trim().split(" ", 2);
-                System.out.println(Arrays.toString(words));
                 String commandWord = words[0];
                 String arguments = words.length > 1 ? words[1] : "";
 
                 switch (commandWord) {
-                    case "unmark": {
+                    case "delete": {
                         if (arguments.trim().isEmpty()) {
                             throw new WodanException(
-                                    "Which quest should the ravens unmark? Try: unmark 2");
+                                    "Which quest is too burdensome? Try: delete 1");
                         }
                         int taskNumber;
                         try {
                             taskNumber = Integer.parseInt(arguments.trim());
                         } catch (NumberFormatException e) {
                             throw new WodanException(
-                                    "'" + arguments.trim() + "' is not a quest number. Try: unmark 2");
+                                    "'" + arguments.trim() + "' is not a quest number. Try: delete 1");
+                        }
+                        if (tasks.isEmpty()) {
+                            throw new WodanException(
+                                    "There are no quests to delete yet. Add one with todo, deadline, or event.");
+                        }
+                        if (taskNumber < 1 || taskNumber > tasks.size()) {
+                            throw new WodanException(
+                                    "There is no quest " + taskNumber + ". The ravens watch over " + tasks.size()
+                                            + (tasks.size() == 1 ? " quest" : " quests")
+                                            + ". Try a number from 1 to " + tasks.size() + ".");
+                        }
+                        Task tbr = tasks.remove(taskNumber - 1);
+                        System.out.println(line);
+                        System.out.println("     Noted. I've removed this task:");
+                        System.out.println("       " + tbr.toString());
+                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
+                        System.out.println(line);
+                        break;
+                    }
+                    case "unmark": {
+                        if (arguments.trim().isEmpty()) {
+                            throw new WodanException(
+                                    "Which quest should the ravens unmark? Try: unmark 1");
+                        }
+                        int taskNumber;
+                        try {
+                            taskNumber = Integer.parseInt(arguments.trim());
+                        } catch (NumberFormatException e) {
+                            throw new WodanException(
+                                    "'" + arguments.trim() + "' is not a quest number. Try: unmark 1");
                         }
                         if (tasks.isEmpty()) {
                             throw new WodanException(
@@ -71,30 +99,21 @@ public class Wodan {
                         currTask.markAsUndone();
                         System.out.println(line);
                         System.out.println("    The ravens retract their approval.");
-                        switch (currTask) {
-                            case Todo todo ->
-                                    System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
-                            case Deadline deadline ->
-                                    System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
-                            case Event event ->
-                                    System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
-                            default -> {
-                            }
-                        }
+                        System.out.println("     " + currTask.toString());
                         System.out.println(line);
                         break;
                     }
                     case "mark": {
                         if (arguments.trim().isEmpty()) {
                             throw new WodanException(
-                                    "Which quest should the ravens mark? Try: mark 2");
+                                    "Which quest should the ravens mark? Try: mark 1");
                         }
                         int taskNumber;
                         try {
                             taskNumber = Integer.parseInt(arguments.trim());
                         } catch (NumberFormatException e) {
                             throw new WodanException(
-                                    "'" + arguments.trim() + "' is not a quest number. Try: mark 2");
+                                    "'" + arguments.trim() + "' is not a quest number. Try: mark 1");
                         }
                         if (tasks.isEmpty()) {
                             throw new WodanException(
@@ -110,16 +129,7 @@ public class Wodan {
                         currTask.markAsDone();
                         System.out.println(line);
                         System.out.println("    One less burden to carry.");
-                        switch (currTask) {
-                            case Todo todo ->
-                                    System.out.printf("     [T] [%s] %s\n", currTask.getStatusIcon(), currTask.getDescription());
-                            case Deadline deadline ->
-                                    System.out.printf("     [D] [%s] %s (by: %s)\n", deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
-                            case Event event ->
-                                    System.out.printf("     [E] [%s] %s (from: %s to: %s)\n", event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
-                            default -> {
-                            }
-                        }
+                        System.out.println("     " + currTask.toString());
                         System.out.println();
                         System.out.println(line);
                         break;
@@ -133,8 +143,7 @@ public class Wodan {
                         Todo todo = new Todo(description);
                         tasks.add(todo);
                         System.out.println("    You have accepted the following quest:");
-                        System.out.printf("        [T] [ ] %s", description);
-                        System.out.println();
+                        System.out.println("        " + todo.toString());
                         System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
                         System.out.println(line);
                         break;
@@ -162,8 +171,7 @@ public class Wodan {
                         Deadline deadline = new Deadline(description, by);
                         tasks.add(deadline);
                         System.out.println("    You have accepted the following quest:");
-                        System.out.printf("        [D] [ ] %s (by: %s)", description, by);
-                        System.out.println();
+                        System.out.println("        " + deadline.toString());
                         System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
                         System.out.println(line);
                         break;
@@ -201,8 +209,7 @@ public class Wodan {
                         Event event = new Event(description, from, to);
                         tasks.add(event);
                         System.out.println("    You have accepted the following quest:");
-                        System.out.printf("        [E] [ ] %s (from: %s to: %s)", description, from, to);
-                        System.out.println();
+                        System.out.println("        " + event.toString());
                         System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
                         System.out.println(line);
                         break;
@@ -216,22 +223,13 @@ public class Wodan {
                         System.out.println(line);
                         System.out.println("    The ravens have given these quests.\n");
                         for (int i = 0; i < tasks.size(); i++) {
-                            Task currTask = tasks.get(i);
-                            if (currTask instanceof Todo) {
-                                System.out.printf("     %d. [T] [%s] %s\n", i + 1, currTask.getStatusIcon(), currTask.getDescription());
-                            } else if (currTask instanceof Deadline) {
-                                Deadline deadline = (Deadline) currTask;
-                                System.out.printf("     %d. [D] [%s] %s (by: %s)\n", i + 1, deadline.getStatusIcon(), deadline.getDescription(), deadline.getDeadline());
-                            } else if (currTask instanceof Event) {
-                                Event event = (Event) currTask;
-                                System.out.printf("     %d. [E] [%s] %s (from: %s to: %s)\n", i + 1, event.getStatusIcon(), event.getDescription(), event.getStartTime(), event.getEndTime());
-                            }
+                            System.out.printf("     %d. %s\n", i + 1, tasks.get(i).toString());
                         }
                         System.out.println(line);
                         break;
                     default:
                         throw new WodanException(
-                                "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, or bye.");
+                                "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, delete, or bye.");
                 }
             } catch (WodanException e) {
                 System.out.println(line);

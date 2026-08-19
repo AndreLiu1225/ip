@@ -14,4 +14,6 @@ abstract class Task {
     abstract public String getStatusIcon();
 
     abstract public String getDescription();
+
+    abstract public String toString();
 }

@@ -28,6 +28,12 @@ public class Event extends Task {
         return super.description;
     }
 
+    @Override
+    public String toString() {
+        return String.format("[E][%s] %s (from: %s to: %s)",
+                getStatusIcon(), getDescription(), startTime, endTime);
+    }
+
     public String getStartTime() {
         return this.startTime;
     }

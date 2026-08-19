@@ -23,4 +23,9 @@ public class Todo extends Task {
     public String getDescription() {
         return super.description;
     }
+
+    @Override
+    public String toString() {
+        return String.format("[T][%s] %s", getStatusIcon(), getDescription());
+    }
 }
