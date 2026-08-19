@@ -42,8 +42,8 @@ public class Wodan {
                 String commandWord = words[0];
                 String arguments = words.length > 1 ? words[1] : "";
 
-                switch (commandWord) {
-                    case "delete": {
+                switch (Command.parse(commandWord)) {
+                    case DELETE: {
                         if (arguments.trim().isEmpty()) {
                             throw new WodanException(
                                     "Which quest is too burdensome? Try: delete 1");
@@ -73,7 +73,7 @@ public class Wodan {
                         System.out.println(line);
                         break;
                     }
-                    case "unmark": {
+                    case UNMARK: {
                         if (arguments.trim().isEmpty()) {
                             throw new WodanException(
                                     "Which quest should the ravens unmark? Try: unmark 1");
@@ -103,7 +103,7 @@ public class Wodan {
                         System.out.println(line);
                         break;
                     }
-                    case "mark": {
+                    case MARK: {
                         if (arguments.trim().isEmpty()) {
                             throw new WodanException(
                                     "Which quest should the ravens mark? Try: mark 1");
@@ -134,7 +134,7 @@ public class Wodan {
                         System.out.println(line);
                         break;
                     }
-                    case "todo": {
+                    case TODO: {
                         String description = arguments.trim();
                         if (description.isEmpty()) {
                             throw new WodanException(
@@ -148,7 +148,7 @@ public class Wodan {
                         System.out.println(line);
                         break;
                     }
-                    case "deadline": {
+                    case DEADLINE: {
                         String[] deadlineParts = arguments.split(" /by ", 2);
                         String description = deadlineParts[0].trim();
                         String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
@@ -176,7 +176,7 @@ public class Wodan {
                         System.out.println(line);
                         break;
                     }
-                    case "event": {
+                    case EVENT: {
                         String[] fromParts = arguments.split(" /from ", 2);
                         String description = fromParts[0].trim();
                         if (description.startsWith("/from")) {
@@ -214,12 +214,12 @@ public class Wodan {
                         System.out.println(line);
                         break;
                     }
-                    case "bye":
+                    case BYE:
                         System.out.println(line);
                         System.out.println("     So it is written. Farewell, wanderer.");
                         System.out.println(line);
                         break label;
-                    case "list":
+                    case LIST:
                         System.out.println(line);
                         System.out.println("    The ravens have given these quests.\n");
                         for (int i = 0; i < tasks.size(); i++) {
