@@ -1,29 +1,23 @@
 /**
- * Words the chatbot recognises as commands.
+ * A user command that can be carried out against the task list.
  */
-public enum Command {
-    TODO, DEADLINE, EVENT, LIST,
-    MARK, UNMARK, DELETE, ON, BYE;
-
+public abstract class Command {
     /**
-     * Returns the command matching {@code word}, ignoring case.
+     * Carries out this command.
      *
-     * @param word First token of the user input.
-     * @return The matching command.
-     * @throws WodanException If {@code word} is not a known command.
+     * @param tasks The task list to read or change.
+     * @param ui The user interface for replies.
+     * @param storage The save file, used when this command changes tasks.
+     * @throws WodanException If the command cannot be completed.
      */
-    public static Command parse(String word) throws WodanException {
-        try {
-            return Command.valueOf(word.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new WodanException(unknownCommandMessage());
-        }
-    }
+    public abstract void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException;
 
     /**
-     * Returns the message used when the user types an unknown command.
+     * Returns {@code true} if the chatbot should stop after this command.
+     *
+     * @return Whether this is an exit command. The default is {@code false}.
      */
-    public static String unknownCommandMessage() {
-        return "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.";
+    public boolean isExit() {
+        return false;
     }
 }

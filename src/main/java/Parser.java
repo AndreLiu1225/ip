@@ -5,19 +5,53 @@ import java.time.LocalDate;
  */
 public class Parser {
     /**
-     * Returns the command matching the first word of {@code fullCommand}.
+     * Returns a command object for {@code fullCommand}.
      *
      * @param fullCommand One line typed by the user.
-     * @return The recognised command.
+     * @return The command to execute.
+     * @throws WodanException If the line is empty, unknown, or has invalid arguments.
+     */
+    public static Command parse(String fullCommand) throws WodanException {
+        CommandWord commandWord = parseCommandWord(fullCommand);
+        String arguments = parseArguments(fullCommand);
+        switch (commandWord) {
+            case TODO:
+                return new AddCommand(parseTodo(arguments));
+            case DEADLINE:
+                return new AddCommand(parseDeadline(arguments));
+            case EVENT:
+                return new AddCommand(parseEvent(arguments));
+            case LIST:
+                return new ListCommand();
+            case MARK:
+                return new MarkCommand(arguments);
+            case UNMARK:
+                return new UnmarkCommand(arguments);
+            case DELETE:
+                return new DeleteCommand(arguments);
+            case ON:
+                return new OnCommand(arguments);
+            case BYE:
+                return new ExitCommand();
+            default:
+                throw new WodanException(CommandWord.unknownCommandMessage());
+        }
+    }
+
+    /**
+     * Returns the command word matching the first word of {@code fullCommand}.
+     *
+     * @param fullCommand One line typed by the user.
+     * @return The recognised command word.
      * @throws WodanException If the line is empty or the command word is unknown.
      */
-    public static Command parseCommand(String fullCommand) throws WodanException {
+    private static CommandWord parseCommandWord(String fullCommand) throws WodanException {
         if (fullCommand.trim().isEmpty()) {
             throw new WodanException(
                     "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.");
         }
         String[] words = fullCommand.trim().split(" ", 2);
-        return Command.parse(words[0]);
+        return CommandWord.parse(words[0]);
     }
 
     /**
@@ -26,7 +60,7 @@ public class Parser {
      * @param fullCommand One line typed by the user.
      * @return The argument text, which may be empty.
      */
-    public static String parseArguments(String fullCommand) {
+    private static String parseArguments(String fullCommand) {
         String[] words = fullCommand.trim().split(" ", 2);
         return words.length > 1 ? words[1] : "";
     }
@@ -38,7 +72,7 @@ public class Parser {
      * @return The todo to add.
      * @throws WodanException If the description is missing or contains {@code |}.
      */
-    public static Todo parseTodo(String arguments) throws WodanException {
+    private static Todo parseTodo(String arguments) throws WodanException {
         String description = arguments.trim();
         if (description.isEmpty()) {
             throw new WodanException(
@@ -55,7 +89,7 @@ public class Parser {
      * @return The deadline to add.
      * @throws WodanException If the description, {@code /by} time, or date is invalid.
      */
-    public static Deadline parseDeadline(String arguments) throws WodanException {
+    private static Deadline parseDeadline(String arguments) throws WodanException {
         String[] deadlineParts = arguments.split("\\s+/by(?:\\s+|$)", 2);
         String description = deadlineParts[0].trim();
         String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
@@ -88,7 +122,7 @@ public class Parser {
      * @return The event to add.
      * @throws WodanException If the description, times, or date range is invalid.
      */
-    public static Event parseEvent(String arguments) throws WodanException {
+    private static Event parseEvent(String arguments) throws WodanException {
         String[] fromParts = arguments.split("\\s+/from(?:\\s+|$)", 2);
         String description = fromParts[0].trim();
         if (description.startsWith("/from")) {
