@@ -53,7 +53,7 @@ public class Storage {
      */
     public ArrayList<Task> load() throws WodanException {
         loadWarning = null;
-        ArrayList<Task> tasks = new ArrayList<Task>();
+        ArrayList<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
             return tasks;
         }
@@ -63,7 +63,7 @@ public class Storage {
         }
 
         try {
-            List<String> lines = new ArrayList<String>(
+            List<String> lines = new ArrayList<>(
                     Files.readAllLines(filePath, StandardCharsets.UTF_8));
             stripBom(lines);
             int skipped = 0;
@@ -104,7 +104,7 @@ public class Storage {
         try {
             createParentDirectory();
 
-            ArrayList<String> lines = new ArrayList<String>();
+            ArrayList<String> lines = new ArrayList<>();
             for (Task task : tasks) {
                 lines.add(task.toStorageString());
             }

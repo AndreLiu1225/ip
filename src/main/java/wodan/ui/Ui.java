@@ -16,13 +16,13 @@ public class Ui {
             + "    \\  /\\  / (_) | (_| | (_| | | | |\n"
             + "     \\/  \\/ \\___/ \\__,_|\\__,_|_| |_|\n";
 
-    private final Scanner in;
+    private final Scanner scanner;
 
     /**
      * Creates a UI that reads from standard input and writes to standard output.
      */
     public Ui() {
-        this.in = new Scanner(System.in);
+        this.scanner = new Scanner(System.in);
     }
 
     /**
@@ -43,7 +43,7 @@ public class Ui {
      * @return {@code true} if a command line can be read.
      */
     public boolean hasCommand() {
-        return in.hasNextLine();
+        return scanner.hasNextLine();
     }
 
     /**
@@ -52,7 +52,7 @@ public class Ui {
      * @return The raw command line.
      */
     public String readCommand() {
-        return in.nextLine();
+        return scanner.nextLine();
     }
 
     /**

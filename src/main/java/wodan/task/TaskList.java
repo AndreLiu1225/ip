@@ -13,7 +13,7 @@ public class TaskList {
      * Creates an empty task list.
      */
     public TaskList() {
-        this.tasks = new ArrayList<Task>();
+        this.tasks = new ArrayList<>();
     }
 
     /**
@@ -22,7 +22,7 @@ public class TaskList {
      * @param loaded Tasks to start with.
      */
     public TaskList(ArrayList<Task> loaded) {
-        this.tasks = new ArrayList<Task>(loaded);
+        this.tasks = new ArrayList<>(loaded);
     }
 
     /**
@@ -90,7 +90,7 @@ public class TaskList {
      * @return 1-based numbers of matching tasks, in list order.
      */
     public ArrayList<Integer> taskNumbersOn(LocalDate date) {
-        ArrayList<Integer> numbers = new ArrayList<Integer>();
+        ArrayList<Integer> numbers = new ArrayList<>();
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).occursOn(date)) {
                 numbers.add(i + 1);

@@ -33,10 +33,10 @@ public class UnmarkCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         int taskNumber = Parser.parseUnmarkNumber(arguments, tasks);
-        Task currTask = tasks.get(taskNumber - 1);
-        currTask.markAsUndone();
+        Task currentTask = tasks.get(taskNumber - 1);
+        currentTask.markAsUndone();
         storage.save(tasks.getTasks());
         ui.show("    The ravens retract their approval.");
-        ui.show("     " + currTask.toString());
+        ui.show("     " + currentTask.toString());
     }
 }
