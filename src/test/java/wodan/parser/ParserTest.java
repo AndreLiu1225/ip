@@ -15,6 +15,7 @@ import wodan.WodanException;
 import wodan.command.AddCommand;
 import wodan.command.DeleteCommand;
 import wodan.command.ExitCommand;
+import wodan.command.FindCommand;
 import wodan.command.ListCommand;
 import wodan.command.OnCommand;
 import wodan.storage.Storage;
@@ -63,9 +64,10 @@ public class ParserTest {
     }
 
     @Test
-    public void parse_deleteAndOn_matchingCommandTypes() throws WodanException {
+    public void parse_deleteOnAndFind_matchingCommandTypes() throws WodanException {
         assertInstanceOf(DeleteCommand.class, Parser.parse("delete 1"));
         assertInstanceOf(OnCommand.class, Parser.parse("on 2019-12-02"));
+        assertInstanceOf(FindCommand.class, Parser.parse("find book"));
     }
 
     @Test
@@ -73,7 +75,7 @@ public class ParserTest {
         WodanException ex = assertThrows(WodanException.class, () -> Parser.parse("   "));
         assertEquals(
                 "Silence is not a command. Speak todo, deadline, event, list, mark, "
-                        + "unmark, delete, on, or bye.",
+                        + "unmark, delete, on, find, or bye.",
                 ex.getMessage());
     }
 
@@ -193,6 +195,18 @@ public class ParserTest {
     public void parseOnDate_missingDate_exceptionThrown() {
         WodanException ex = assertThrows(WodanException.class, () -> Parser.parseOnDate(""));
         assertEquals("Which day should the ravens search? Try: on 2019-12-02", ex.getMessage());
+    }
+
+    @Test
+    public void parseFindKeyword_trimmedText_returnsKeyword() throws WodanException {
+        assertEquals("book", Parser.parseFindKeyword("  book  "));
+        assertEquals("return book", Parser.parseFindKeyword("return book"));
+    }
+
+    @Test
+    public void parseFindKeyword_missingKeyword_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseFindKeyword(""));
+        assertEquals("Which word should the ravens seek? Try: find book", ex.getMessage());
     }
 
     private Task addedTask(String command) throws WodanException {

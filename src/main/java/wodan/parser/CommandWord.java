@@ -22,6 +22,8 @@ public enum CommandWord {
     DELETE,
     /** Show tasks that occur on a date. */
     ON,
+    /** Find tasks by a keyword in the description. */
+    FIND,
     /** Stop the chatbot. */
     BYE;
 
@@ -47,6 +49,6 @@ public enum CommandWord {
      */
     public static String unknownCommandMessage() {
         return "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, "
-                + "delete, on, or bye.";
+                + "delete, on, find, or bye.";
     }
 }

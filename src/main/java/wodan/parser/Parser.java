@@ -7,6 +7,7 @@ import wodan.command.AddCommand;
 import wodan.command.Command;
 import wodan.command.DeleteCommand;
 import wodan.command.ExitCommand;
+import wodan.command.FindCommand;
 import wodan.command.ListCommand;
 import wodan.command.MarkCommand;
 import wodan.command.OnCommand;
@@ -54,6 +55,8 @@ public class Parser {
                 return new DeleteCommand(arguments);
             case ON:
                 return new OnCommand(arguments);
+            case FIND:
+                return new FindCommand(arguments);
             case BYE:
                 return new ExitCommand();
             default:
@@ -72,7 +75,7 @@ public class Parser {
         if (fullCommand.trim().isEmpty()) {
             throw new WodanException(
                     "Silence is not a command. Speak todo, deadline, event, list, mark, "
-                            + "unmark, delete, on, or bye.");
+                            + "unmark, delete, on, find, or bye.");
         }
         String[] words = fullCommand.trim().split(" ", 2);
         return CommandWord.parse(words[0]);
@@ -263,6 +266,22 @@ public class Parser {
                     "Which day should the ravens search? Try: on 2019-12-02");
         }
         return TaskDateTime.parse(arguments.trim()).toLocalDate();
+    }
+
+    /**
+     * Returns the keyword for a {@code find} command.
+     *
+     * @param arguments Text after the {@code find} command word.
+     * @return The trimmed keyword.
+     * @throws WodanException If the keyword is missing.
+     */
+    public static String parseFindKeyword(String arguments) throws WodanException {
+        String keyword = arguments.trim();
+        if (keyword.isEmpty()) {
+            throw new WodanException(
+                    "Which word should the ravens seek? Try: find book");
+        }
+        return keyword;
     }
 
     /**
