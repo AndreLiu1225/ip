@@ -1,25 +1,45 @@
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 /**
- * Entry point for the Wodan chatbot.
- * Saves the task list to {@code data/wodan.txt} (relative to the working directory)
- * whenever it changes.
- * Loads the task list from that file when the chatbot starts.
+ * Coordinates the chatbot: user interface, task list, and disk storage.
+ * Saves the task list whenever it changes, and loads it when the chatbot starts.
  */
 public class Wodan {
-    public static void main(String[] args) {
-        Ui ui = new Ui();
-        Storage storage = new Storage();
-        TaskList tasks = new TaskList();
-        String startMessage = null;
-        try {
-            tasks = new TaskList(storage.load());
-            startMessage = storage.getLoadWarning();
-        } catch (WodanException e) {
-            startMessage = e.getMessage();
-        }
+    private static final String DEFAULT_SAVE_PATH = Path.of("data", "wodan.txt").toString();
 
+    private final Storage storage;
+    private final TaskList tasks;
+    private final Ui ui;
+    private final String startMessage;
+
+    /**
+     * Creates a chatbot that stores tasks at {@code filePath}.
+     * If the file cannot be loaded, the task list starts empty and a message is shown at startup.
+     *
+     * @param filePath Save-file path, relative to the working directory if the path is relative.
+     */
+    public Wodan(String filePath) {
+        ui = new Ui();
+        storage = new Storage(filePath);
+        TaskList loadedTasks;
+        String loadMessage = null;
+        try {
+            loadedTasks = new TaskList(storage.load());
+            loadMessage = storage.getLoadWarning();
+        } catch (WodanException e) {
+            loadedTasks = new TaskList();
+            loadMessage = e.getMessage();
+        }
+        tasks = loadedTasks;
+        startMessage = loadMessage;
+    }
+
+    /**
+     * Shows the greeting and then reads commands until the user says bye, or input ends.
+     */
+    public void run() {
         ui.showWelcome();
         if (startMessage != null) {
             ui.showError(startMessage);
@@ -112,7 +132,7 @@ public class Wodan {
                         ui.showLine();
                         break;
                     case ON: {
-                        printTasksOnDate(ui, tasks, arguments);
+                        printTasksOnDate(arguments);
                         break;
                     }
                     default:
@@ -124,8 +144,16 @@ public class Wodan {
         }
     }
 
-    private static void printTasksOnDate(Ui ui, TaskList tasks, String arguments)
-            throws WodanException {
+    /**
+     * Starts the chatbot using {@code data/wodan.txt} relative to the working directory.
+     *
+     * @param args Unused.
+     */
+    public static void main(String[] args) {
+        new Wodan(DEFAULT_SAVE_PATH).run();
+    }
+
+    private void printTasksOnDate(String arguments) throws WodanException {
         LocalDate date = Parser.parseOnDate(arguments);
         String displayDate = TaskDateTime.formatDate(date);
         ui.showLine();

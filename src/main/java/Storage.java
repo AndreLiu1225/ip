@@ -8,22 +8,20 @@ import java.util.List;
 /**
  * Reads and writes the task list on the hard disk.
  * Invalid save-file lines are skipped so that readable tasks are not lost.
- * The save location is the relative path {@code data/wodan.txt}, built with
+ * The save location is supplied by the caller, typically
  * {@code Path.of("data", "wodan.txt")} so it works on every operating system.
  */
 public class Storage {
-    private static final String DATA_FOLDER_NAME = "data";
-    private static final String SAVE_FILE_NAME = "wodan.txt";
-    private static final Path SAVE_FILE_PATH = Path.of(DATA_FOLDER_NAME, SAVE_FILE_NAME);
-
     private final Path filePath;
     private String loadWarning;
 
     /**
-     * Creates storage at {@code data/wodan.txt}, relative to the working directory.
+     * Creates storage at {@code filePath}, relative to the working directory if the path is relative.
+     *
+     * @param filePath Save-file path, for example {@code data/wodan.txt}.
      */
-    public Storage() {
-        this.filePath = SAVE_FILE_PATH;
+    public Storage(String filePath) {
+        this.filePath = Path.of(filePath);
         this.loadWarning = null;
     }
 
