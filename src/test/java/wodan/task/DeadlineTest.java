@@ -1,0 +1,31 @@
+package wodan.task;
+
+import java.time.LocalDate;
+
+import org.junit.jupiter.api.Test;
+
+import wodan.WodanException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Unit tests for {@link Deadline} date matching and encoding.
+ */
+public class DeadlineTest {
+    @Test
+    public void occursOn_dueDate_trueOnlyOnThatDay() throws WodanException {
+        Deadline deadline = new Deadline("return book", TaskDateTime.parse("2019-12-02 1800"));
+        assertTrue(deadline.occursOn(LocalDate.of(2019, 12, 2)));
+        assertFalse(deadline.occursOn(LocalDate.of(2019, 12, 1)));
+        assertFalse(deadline.occursOn(LocalDate.of(2019, 12, 3)));
+    }
+
+    @Test
+    public void toStringAndStorage_unmarkedDeadline_includesByDate() throws WodanException {
+        Deadline deadline = new Deadline("return book", TaskDateTime.parse("2019-10-15"));
+        assertEquals("[D][ ] return book (by: Oct 15 2019)", deadline.toString());
+        assertEquals("D | 0 | return book | 2019-10-15", deadline.toStorageString());
+    }
+}
