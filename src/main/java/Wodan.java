@@ -1,27 +1,15 @@
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  * Entry point for the Wodan chatbot.
- * Prints a few ASCII-art banner variations for the mixed-case name "Wodan".
  * Saves the task list to {@code data/wodan.txt} (relative to the working directory)
  * whenever it changes.
  * Loads the task list from that file when the chatbot starts.
  */
 public class Wodan {
     public static void main(String[] args) {
-
-
-        String banner = " __          __       _\n"
-                + " \\ \\        / /      | |\n"
-                + "  \\ \\  /\\  / /__   __| | __ _ _ __\n"
-                + "   \\ \\/  \\/ / _ \\ / _` |/ _` | '_ \\\n"
-                + "    \\  /\\  / (_) | (_| | (_| | | | |\n"
-                + "     \\/  \\/ \\___/ \\__,_|\\__,_|_| |_|\n";
-
-        String line = "    ____________________________________________________________";
-
+        Ui ui = new Ui();
         Storage storage = new Storage();
         ArrayList<Task> tasks = new ArrayList<Task>();
         String startMessage = null;
@@ -32,23 +20,17 @@ public class Wodan {
             startMessage = e.getMessage();
         }
 
-        System.out.println(banner);
-        System.out.println(line);
-        System.out.println("     Hail, wanderer. Wodan is listening.");
-        System.out.println("     What is your command?");
-        System.out.println(line);
-        System.out.println();
+        ui.showWelcome();
         if (startMessage != null) {
-            printMessage(line, startMessage);
+            ui.showError(startMessage);
         }
-        Scanner in = new Scanner(System.in);
 
         label:
         while (true) {
-            if (!in.hasNextLine()) {
+            if (!ui.hasCommand()) {
                 break label;
             }
-            String command = in.nextLine();
+            String command = ui.readCommand();
             try {
                 if (command.trim().isEmpty()) {
                     throw new WodanException(
@@ -68,11 +50,11 @@ public class Wodan {
                         int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: delete 1", tasks, "There are no quests to delete yet. Add one with todo, deadline, or event.");
                         Task tbr = tasks.remove(taskNumber - 1);
                         storage.save(tasks);
-                        System.out.println(line);
-                        System.out.println("     Noted. I've removed this task:");
-                        System.out.println("       " + tbr.toString());
-                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                        System.out.println(line);
+                        ui.showLine();
+                        ui.show("     Noted. I've removed this task:");
+                        ui.show("       " + tbr.toString());
+                        ui.show("     Now you have " + tasks.size() + " tasks in the list.");
+                        ui.showLine();
                         break;
                     }
                     case UNMARK: {
@@ -84,10 +66,10 @@ public class Wodan {
                         Task currTask = tasks.get(taskNumber - 1);
                         currTask.markAsUndone();
                         storage.save(tasks);
-                        System.out.println(line);
-                        System.out.println("    The ravens retract their approval.");
-                        System.out.println("     " + currTask.toString());
-                        System.out.println(line);
+                        ui.showLine();
+                        ui.show("    The ravens retract their approval.");
+                        ui.show("     " + currTask.toString());
+                        ui.showLine();
                         break;
                     }
                     case MARK: {
@@ -99,11 +81,11 @@ public class Wodan {
                         Task currTask = tasks.get(taskNumber - 1);
                         currTask.markAsDone();
                         storage.save(tasks);
-                        System.out.println(line);
-                        System.out.println("    One less burden to carry.");
-                        System.out.println("     " + currTask.toString());
-                        System.out.println();
-                        System.out.println(line);
+                        ui.showLine();
+                        ui.show("    One less burden to carry.");
+                        ui.show("     " + currTask.toString());
+                        ui.show("");
+                        ui.showLine();
                         break;
                     }
                     case TODO: {
@@ -116,54 +98,52 @@ public class Wodan {
                         Todo todo = new Todo(description);
                         tasks.add(todo);
                         storage.save(tasks);
-                        System.out.println("    You have accepted the following quest:");
-                        System.out.println("        " + todo.toString());
-                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                        System.out.println(line);
+                        ui.show("    You have accepted the following quest:");
+                        ui.show("        " + todo.toString());
+                        ui.show("     Now you have " + tasks.size() + " tasks in the list.");
+                        ui.showLine();
                         break;
                     }
                     case DEADLINE: {
                         Deadline deadline = getDeadline(arguments);
                         tasks.add(deadline);
                         storage.save(tasks);
-                        System.out.println("    You have accepted the following quest:");
-                        System.out.println("        " + deadline.toString());
-                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                        System.out.println(line);
+                        ui.show("    You have accepted the following quest:");
+                        ui.show("        " + deadline.toString());
+                        ui.show("     Now you have " + tasks.size() + " tasks in the list.");
+                        ui.showLine();
                         break;
                     }
                     case EVENT: {
                         Event event = getEvent(arguments);
                         tasks.add(event);
                         storage.save(tasks);
-                        System.out.println("    You have accepted the following quest:");
-                        System.out.println("        " + event.toString());
-                        System.out.println("     Now you have " + tasks.size() + " tasks in the list.");
-                        System.out.println(line);
+                        ui.show("    You have accepted the following quest:");
+                        ui.show("        " + event.toString());
+                        ui.show("     Now you have " + tasks.size() + " tasks in the list.");
+                        ui.showLine();
                         break;
                     }
                     case BYE:
-                        System.out.println(line);
-                        System.out.println("     So it is written. Farewell, wanderer.");
-                        System.out.println(line);
+                        ui.showGoodbye();
                         break label;
                     case LIST:
-                        System.out.println(line);
-                        System.out.println("    The ravens have given these quests.\n");
+                        ui.showLine();
+                        ui.show("    The ravens have given these quests.\n");
                         for (int i = 0; i < tasks.size(); i++) {
-                            System.out.printf("     %d. %s\n", i + 1, tasks.get(i).toString());
+                            ui.showNumberedTask(i + 1, tasks.get(i));
                         }
-                        System.out.println(line);
+                        ui.showLine();
                         break;
                     case ON: {
-                        printTasksOnDate(line, tasks, arguments);
+                        printTasksOnDate(ui, tasks, arguments);
                         break;
                     }
                     default:
                         throw new WodanException(Command.unknownCommandMessage());
                 }
             } catch (WodanException e) {
-                printMessage(line, e.getMessage());
+                ui.showError(e.getMessage());
             }
         }
     }
@@ -253,7 +233,7 @@ public class Wodan {
         return new Event(description, startAt, endAt);
     }
 
-    private static void printTasksOnDate(String line, ArrayList<Task> tasks, String arguments)
+    private static void printTasksOnDate(Ui ui, ArrayList<Task> tasks, String arguments)
             throws WodanException {
         if (arguments.trim().isEmpty()) {
             throw new WodanException(
@@ -261,21 +241,21 @@ public class Wodan {
         }
         LocalDate date = TaskDateTime.parse(arguments.trim()).toLocalDate();
         String displayDate = TaskDateTime.formatDate(date);
-        System.out.println(line);
+        ui.showLine();
         boolean isFound = false;
         for (int i = 0; i < tasks.size(); i++) {
             if (tasks.get(i).occursOn(date)) {
                 if (!isFound) {
-                    System.out.println("    The ravens found these quests on " + displayDate + ".\n");
+                    ui.show("    The ravens found these quests on " + displayDate + ".\n");
                     isFound = true;
                 }
-                System.out.printf("     %d. %s\n", i + 1, tasks.get(i).toString());
+                ui.showNumberedTask(i + 1, tasks.get(i));
             }
         }
         if (!isFound) {
-            System.out.println("    The ravens found no quests on " + displayDate + ".");
+            ui.show("    The ravens found no quests on " + displayDate + ".");
         }
-        System.out.println(line);
+        ui.showLine();
     }
 
     /**
@@ -291,19 +271,8 @@ public class Wodan {
         }
     }
 
-    /**
-     * Prints {@code message} between the usual reply lines.
-     *
-     * @param line Horizontal rule used around chatbot replies.
-     * @param message Text to show the user.
-     */
-    private static void printMessage(String line, String message) {
-        System.out.println(line);
-        System.out.println("     " + message);
-        System.out.println(line);
-    }
-
-    private static int getTaskNumber(String arguments, String x, ArrayList<Task> tasks, String message) throws WodanException {
+    private static int getTaskNumber(String arguments, String x, ArrayList<Task> tasks, String message)
+            throws WodanException {
         int taskNumber;
         try {
             taskNumber = Integer.parseInt(arguments.trim());
