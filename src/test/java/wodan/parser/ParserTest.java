@@ -1,5 +1,11 @@
 package wodan.parser;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
@@ -18,12 +24,6 @@ import wodan.task.Task;
 import wodan.task.TaskList;
 import wodan.task.Todo;
 import wodan.ui.Ui;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link Parser}, focusing on command interpretation and validation.
@@ -72,7 +72,8 @@ public class ParserTest {
     public void parse_emptyLine_exceptionThrown() {
         WodanException ex = assertThrows(WodanException.class, () -> Parser.parse("   "));
         assertEquals(
-                "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.",
+                "Silence is not a command. Speak todo, deadline, event, list, mark, "
+                        + "unmark, delete, on, or bye.",
                 ex.getMessage());
     }
 

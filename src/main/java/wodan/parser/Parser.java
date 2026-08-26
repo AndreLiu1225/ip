@@ -65,13 +65,14 @@ public class Parser {
      * Returns the command word matching the first word of {@code fullCommand}.
      *
      * @param fullCommand One line typed by the user.
-     * @return The recognised command word.
+     * @return The recognized command word.
      * @throws WodanException If the line is empty or the command word is unknown.
      */
     private static CommandWord parseCommandWord(String fullCommand) throws WodanException {
         if (fullCommand.trim().isEmpty()) {
             throw new WodanException(
-                    "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.");
+                    "Silence is not a command. Speak todo, deadline, event, list, mark, "
+                            + "unmark, delete, on, or bye.");
         }
         String[] words = fullCommand.trim().split(" ", 2);
         return CommandWord.parse(words[0]);

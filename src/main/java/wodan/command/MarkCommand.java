@@ -33,11 +33,11 @@ public class MarkCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         int taskNumber = Parser.parseMarkNumber(arguments, tasks);
-        Task currTask = tasks.get(taskNumber - 1);
-        currTask.markAsDone();
+        Task currentTask = tasks.get(taskNumber - 1);
+        currentTask.markAsDone();
         storage.save(tasks.getTasks());
         ui.show("    One less burden to carry.");
-        ui.show("     " + currTask.toString());
+        ui.show("     " + currentTask.toString());
         ui.show("");
     }
 }

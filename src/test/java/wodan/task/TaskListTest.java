@@ -1,14 +1,14 @@
 package wodan.task;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
 import wodan.WodanException;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Unit tests for {@link TaskList} add, delete, and date lookup.
@@ -31,7 +31,7 @@ public class TaskListTest {
 
     @Test
     public void constructor_copyOfLoadedList_independentFromOriginal() {
-        ArrayList<Task> loaded = new ArrayList<Task>();
+        ArrayList<Task> loaded = new ArrayList<>();
         loaded.add(new Todo("keep"));
         TaskList tasks = new TaskList(loaded);
         loaded.add(new Todo("extra"));

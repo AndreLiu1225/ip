@@ -3,7 +3,7 @@ package wodan.parser;
 import wodan.WodanException;
 
 /**
- * Words the chatbot recognises as the first token of a command line.
+ * Words the chatbot recognizes as the first token of a command line.
  */
 public enum CommandWord {
     /** Add a todo task. */
@@ -46,6 +46,7 @@ public enum CommandWord {
      * @return The unknown-command error text.
      */
     public static String unknownCommandMessage() {
-        return "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.";
+        return "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, "
+                + "delete, on, or bye.";
     }
 }

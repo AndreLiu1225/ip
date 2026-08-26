@@ -1,5 +1,10 @@
 package wodan.storage;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,13 +19,8 @@ import wodan.task.Task;
 import wodan.task.TaskDateTime;
 import wodan.task.Todo;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 /**
- * Unit tests for {@link Storage} load and save behaviour.
+ * Unit tests for {@link Storage} load and save behavior.
  */
 public class StorageTest {
     @TempDir
@@ -39,7 +39,7 @@ public class StorageTest {
     public void saveThenLoad_roundTrip_preservesTodoAndDeadline() throws Exception {
         Path file = tempDir.resolve("nested").resolve("wodan.txt");
         Storage storage = new Storage(file.toString());
-        ArrayList<Task> original = new ArrayList<Task>();
+        ArrayList<Task> original = new ArrayList<>();
         Todo todo = new Todo("borrow book");
         todo.markAsDone();
         original.add(todo);

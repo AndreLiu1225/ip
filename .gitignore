@@ -19,8 +19,12 @@ bin/
 # Temp files
 _temp/
 
-#.cursor files
-/.cursor/
+# .cursor files (keep IDE/user state local; track mandated project skills)
+/.cursor/*
+!/.cursor/skills/
+/.cursor/skills/*
+!/.cursor/skills/seedu-java-coding-standard/
+!/.cursor/skills/seedu-java-coding-standard/**
 
 # test files
 /test/
