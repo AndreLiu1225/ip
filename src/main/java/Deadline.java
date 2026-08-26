@@ -1,12 +1,20 @@
+import java.time.LocalDate;
+
 /**
  * A task that must be done by a given deadline.
  */
 public class Deadline extends Task {
-    protected String deadline;
+    protected TaskDateTime dueAt;
 
-    public Deadline(String description, String deadline) {
+    /**
+     * Creates a deadline with the given due date or date-time.
+     *
+     * @param description What must be done.
+     * @param dueAt When it is due.
+     */
+    public Deadline(String description, TaskDateTime dueAt) {
         super(description);
-        this.deadline = deadline;
+        this.dueAt = dueAt;
     }
 
     @Override
@@ -31,15 +39,22 @@ public class Deadline extends Task {
 
     @Override
     public String toString() {
-        return String.format("[D][%s] %s (by: %s)", getStatusIcon(), getDescription(), deadline);
+        return String.format("[D][%s] %s (by: %s)",
+                getStatusIcon(), getDescription(), dueAt.toDisplayString());
     }
 
-    public String getDeadline() {
-        return this.deadline;
+    public TaskDateTime getDueAt() {
+        return this.dueAt;
+    }
+
+    @Override
+    public boolean occursOn(LocalDate date) {
+        return dueAt.toLocalDate().equals(date);
     }
 
     @Override
     public String toStorageString() {
-        return "D | " + (super.isDone ? "1" : "0") + " | " + super.description + " | " + deadline;
+        return "D | " + (super.isDone ? "1" : "0") + " | " + super.description
+                + " | " + dueAt.toStorageString();
     }
 }

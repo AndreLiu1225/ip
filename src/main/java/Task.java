@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 /**
  * A task that the user can mark as done or not done.
  */
@@ -26,4 +28,15 @@ abstract class Task {
      * @return A pipe-separated line describing the task type, done status, and details.
      */
     abstract public String toStorageString();
+
+    /**
+     * Returns {@code true} if this task occurs on {@code date}.
+     * Todos never occur on a calendar date.
+     *
+     * @param date Date to check.
+     * @return Whether this task falls on {@code date}.
+     */
+    public boolean occursOn(LocalDate date) {
+        return false;
+    }
 }
