@@ -1,4 +1,8 @@
+package wodan.ui;
+
 import java.util.Scanner;
+
+import wodan.task.Task;
 
 /**
  * Interactions with the user through the console.

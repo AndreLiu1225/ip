@@ -1,9 +1,11 @@
+package wodan.task;
+
 import java.time.LocalDate;
 
 /**
  * A task that the user can mark as done or not done.
  */
-abstract class Task {
+public abstract class Task {
     protected String description;
     protected boolean isDone;
 

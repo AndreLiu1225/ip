@@ -1,4 +1,12 @@
+package wodan;
+
 import java.nio.file.Path;
+
+import wodan.command.Command;
+import wodan.parser.Parser;
+import wodan.storage.Storage;
+import wodan.task.TaskList;
+import wodan.ui.Ui;
 
 /**
  * Coordinates the chatbot: user interface, task list, and disk storage.

@@ -1,3 +1,9 @@
+package wodan.command;
+
+import wodan.storage.Storage;
+import wodan.task.TaskList;
+import wodan.ui.Ui;
+
 /**
  * Shows every task in the list, numbered from 1.
  */

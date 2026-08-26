@@ -1,3 +1,7 @@
+package wodan.parser;
+
+import wodan.WodanException;
+
 /**
  * Words the chatbot recognises as the first token of a command line.
  */
