@@ -40,7 +40,9 @@ public class Wodan {
     public void run() {
         ui.showWelcome();
         if (startMessage != null) {
+            ui.showLine();
             ui.showError(startMessage);
+            ui.showLine();
         }
 
         boolean isExit = false;
@@ -50,11 +52,14 @@ public class Wodan {
             }
             try {
                 String fullCommand = ui.readCommand();
+                ui.showLine();
                 Command c = Parser.parse(fullCommand);
                 c.execute(tasks, ui, storage);
                 isExit = c.isExit();
             } catch (WodanException e) {
                 ui.showError(e.getMessage());
+            } finally {
+                ui.showLine();
             }
         }
     }

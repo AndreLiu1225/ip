@@ -19,9 +19,7 @@ public class UnmarkCommand extends Command {
         Task currTask = tasks.get(taskNumber - 1);
         currTask.markAsUndone();
         storage.save(tasks.getTasks());
-        ui.showLine();
         ui.show("    The ravens retract their approval.");
         ui.show("     " + currTask.toString());
-        ui.showLine();
     }
 }

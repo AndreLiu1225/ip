@@ -20,6 +20,5 @@ public class AddCommand extends Command {
         ui.show("    You have accepted the following quest:");
         ui.show("        " + task.toString());
         ui.show("     Now you have " + tasks.size() + " tasks in the list.");
-        ui.showLine();
     }
 }

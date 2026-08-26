@@ -48,23 +48,19 @@ public class Ui {
     }
 
     /**
-     * Shows {@code message} between the usual reply lines.
+     * Shows an error message. The surrounding divider lines are drawn by {@code Wodan.run}.
      *
      * @param message Text to show the user.
      */
     public void showError(String message) {
-        System.out.println(LINE);
         System.out.println("     " + message);
-        System.out.println(LINE);
     }
 
     /**
-     * Shows the farewell message.
+     * Shows the farewell message. The surrounding divider lines are drawn by {@code Wodan.run}.
      */
     public void showGoodbye() {
-        System.out.println(LINE);
         System.out.println("     So it is written. Farewell, wanderer.");
-        System.out.println(LINE);
     }
 
     /**

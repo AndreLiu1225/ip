@@ -20,7 +20,6 @@ public class OnCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         LocalDate date = Parser.parseOnDate(arguments);
         String displayDate = TaskDateTime.formatDate(date);
-        ui.showLine();
         ArrayList<Integer> numbers = tasks.taskNumbersOn(date);
         if (numbers.isEmpty()) {
             ui.show("    The ravens found no quests on " + displayDate + ".");
@@ -30,6 +29,5 @@ public class OnCommand extends Command {
                 ui.showNumberedTask(number, tasks.get(number - 1));
             }
         }
-        ui.showLine();
     }
 }

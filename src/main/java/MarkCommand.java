@@ -19,10 +19,8 @@ public class MarkCommand extends Command {
         Task currTask = tasks.get(taskNumber - 1);
         currTask.markAsDone();
         storage.save(tasks.getTasks());
-        ui.showLine();
         ui.show("    One less burden to carry.");
         ui.show("     " + currTask.toString());
         ui.show("");
-        ui.showLine();
     }
 }
