@@ -22,6 +22,14 @@ public class UnmarkCommand extends Command {
         this.arguments = arguments;
     }
 
+    /**
+     * Marks the numbered task as not done, saves the list, and shows the updated task.
+     *
+     * @param tasks The task list to change.
+     * @param ui The user interface for the reply.
+     * @param storage The save file to update.
+     * @throws WodanException If the number is invalid or the list cannot be saved.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         int taskNumber = Parser.parseUnmarkNumber(arguments, tasks);

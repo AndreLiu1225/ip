@@ -25,6 +25,14 @@ public class OnCommand extends Command {
         this.arguments = arguments;
     }
 
+    /**
+     * Shows deadlines and events that occur on the parsed date, with original list numbers.
+     *
+     * @param tasks The task list to search.
+     * @param ui The user interface for the reply.
+     * @param storage Unused.
+     * @throws WodanException If the date is missing or cannot be parsed.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         LocalDate date = Parser.parseOnDate(arguments);

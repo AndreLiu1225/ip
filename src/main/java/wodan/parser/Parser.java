@@ -22,6 +22,12 @@ import wodan.task.Todo;
  */
 public class Parser {
     /**
+     * Prevents instantiation; command parsing is done through static methods.
+     */
+    private Parser() {
+    }
+
+    /**
      * Returns a command object for {@code fullCommand}.
      *
      * @param fullCommand One line typed by the user.
@@ -272,7 +278,15 @@ public class Parser {
     }
 
     /**
-     * Parses a 1-based task number and checks that it refers to a task in {@code tasks}.
+     * Returns a 1-based task number parsed from {@code arguments} that exists in {@code tasks}.
+     *
+     * @param arguments Text after the command word.
+     * @param tasks Current task list, used to check that the number is in range.
+     * @param missingMessage Error if {@code arguments} is blank.
+     * @param notANumberSuffix Error suffix if {@code arguments} is not an integer.
+     * @param emptyListMessage Error if {@code tasks} has no items.
+     * @return A 1-based task number that exists in {@code tasks}.
+     * @throws WodanException If the number is missing, not an integer, or out of range.
      */
     private static int parseTaskNumber(String arguments, TaskList tasks, String missingMessage,
             String notANumberSuffix, String emptyListMessage) throws WodanException {

@@ -21,6 +21,14 @@ public class AddCommand extends Command {
         this.task = task;
     }
 
+    /**
+     * Adds the stored task to {@code tasks}, saves the list, and shows the accepted-quest reply.
+     *
+     * @param tasks The task list to change.
+     * @param ui The user interface for the reply.
+     * @param storage The save file to update.
+     * @throws WodanException If the list cannot be saved.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         tasks.add(task);

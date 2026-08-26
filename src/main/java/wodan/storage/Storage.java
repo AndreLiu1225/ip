@@ -36,6 +36,8 @@ public class Storage {
 
     /**
      * Returns a warning about skipped save-file lines from the most recent load, or {@code null}.
+     *
+     * @return The warning text, or {@code null} if nothing was skipped.
      */
     public String getLoadWarning() {
         return loadWarning;
@@ -113,7 +115,7 @@ public class Storage {
     }
 
     /**
-     * Creates the {@code data} folder if it does not already exist.
+     * Creates the save file's parent folder if it does not already exist.
      *
      * @throws IOException If the folder cannot be created.
      */
@@ -126,6 +128,9 @@ public class Storage {
 
     /**
      * Returns the task encoded in {@code line}, or {@code null} if the line is not valid.
+     *
+     * @param line One save-file line.
+     * @return The task, or {@code null} if the line is corrupt.
      */
     private Task parseTask(String line) {
         String[] parts = splitFields(line);
@@ -187,6 +192,9 @@ public class Storage {
 
     /**
      * Splits a save-file line on {@code |} and trims each field.
+     *
+     * @param line One save-file line.
+     * @return The fields in order.
      */
     private String[] splitFields(String line) {
         String[] rawParts = line.split("\\|", -1);
@@ -199,6 +207,8 @@ public class Storage {
 
     /**
      * Removes a UTF-8 BOM from the first line if present.
+     *
+     * @param lines Lines read from the save file.
      */
     private void stripBom(List<String> lines) {
         if (lines.isEmpty()) {
