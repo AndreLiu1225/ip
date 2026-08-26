@@ -1,3 +1,6 @@
+/**
+ * A task that starts and ends at given times.
+ */
 public class Event extends Task {
     protected String startTime;
     protected String endTime;
@@ -40,5 +43,11 @@ public class Event extends Task {
 
     public String getEndTime() {
         return this.endTime;
+    }
+
+    @Override
+    public String toStorageString() {
+        return "E | " + (super.isDone ? "1" : "0") + " | " + super.description
+                + " | " + startTime + " | " + endTime;
     }
 }

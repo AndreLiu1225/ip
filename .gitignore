@@ -13,6 +13,9 @@ src/main/resources/docs/
 *.iml
 bin/
 
+# Saved task list (created at runtime)
+/data/
+
 # Temp files
 _temp/
 

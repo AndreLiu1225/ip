@@ -1,3 +1,6 @@
+/**
+ * A task that must be done by a given deadline.
+ */
 public class Deadline extends Task {
     protected String deadline;
 
@@ -33,5 +36,10 @@ public class Deadline extends Task {
 
     public String getDeadline() {
         return this.deadline;
+    }
+
+    @Override
+    public String toStorageString() {
+        return "D | " + (super.isDone ? "1" : "0") + " | " + super.description + " | " + deadline;
     }
 }
