@@ -25,6 +25,8 @@ _temp/
 /.cursor/skills/*
 !/.cursor/skills/seedu-java-coding-standard/
 !/.cursor/skills/seedu-java-coding-standard/**
+!/.cursor/skills/seedu-git-standard/
+!/.cursor/skills/seedu-git-standard/**
 
 # test files
 /test/

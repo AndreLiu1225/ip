@@ -19,6 +19,7 @@ Unless the user says otherwise, assume that you are assisting a student working 
 
   * When suggesting a Git command, briefly explain what it does.
   * Follow the `seedu-java-coding-standard` skill for naming, layout, statements, and Javadoc. Do not invent a different house style.
+  * Follow the `seedu-git-standard` skill for commit messages and branch names. Do not invent a different Git style.
   * Make generated code as self-explanatory as possible, and include explanatory comments where they improve understanding.
   * When faced with a design choice, choose the simplest option that is sufficient for the requirements, while briefly explaining relevant more advanced alternatives.
 
@@ -41,6 +42,7 @@ Ensure that Java 25 is used when running the application or build tasks. On macO
 
 ## Git
 
+All commits and new branch names MUST follow the [SE-EDU Git conventions](https://se-education.org/guides/conventions/git.html). Read `.cursor/skills/seedu-git-standard/SKILL.md` before proposing or creating a commit, and apply it.
+
 Use lightweight tags unless the user requests an annotated tag.
-When proposing or creating a commit message, include enough detail to explain the rationale for the change.
 Do not commit or push unless explicitly asked.
