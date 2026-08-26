@@ -11,10 +11,10 @@ public class Wodan {
     public static void main(String[] args) {
         Ui ui = new Ui();
         Storage storage = new Storage();
-        ArrayList<Task> tasks = new ArrayList<Task>();
+        TaskList tasks = new TaskList();
         String startMessage = null;
         try {
-            tasks = storage.load();
+            tasks = new TaskList(storage.load());
             startMessage = storage.getLoadWarning();
         } catch (WodanException e) {
             startMessage = e.getMessage();
@@ -48,8 +48,8 @@ public class Wodan {
                                     "Which quest is too burdensome? Try: delete 1");
                         }
                         int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: delete 1", tasks, "There are no quests to delete yet. Add one with todo, deadline, or event.");
-                        Task tbr = tasks.remove(taskNumber - 1);
-                        storage.save(tasks);
+                        Task tbr = tasks.delete(taskNumber - 1);
+                        storage.save(tasks.getTasks());
                         ui.showLine();
                         ui.show("     Noted. I've removed this task:");
                         ui.show("       " + tbr.toString());
@@ -65,7 +65,7 @@ public class Wodan {
                         int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: unmark 1", tasks, "There are no quests to unmark yet. Add one with todo, deadline, or event.");
                         Task currTask = tasks.get(taskNumber - 1);
                         currTask.markAsUndone();
-                        storage.save(tasks);
+                        storage.save(tasks.getTasks());
                         ui.showLine();
                         ui.show("    The ravens retract their approval.");
                         ui.show("     " + currTask.toString());
@@ -80,7 +80,7 @@ public class Wodan {
                         int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: mark 1", tasks, "There are no quests to mark yet. Add one with todo, deadline, or event.");
                         Task currTask = tasks.get(taskNumber - 1);
                         currTask.markAsDone();
-                        storage.save(tasks);
+                        storage.save(tasks.getTasks());
                         ui.showLine();
                         ui.show("    One less burden to carry.");
                         ui.show("     " + currTask.toString());
@@ -97,7 +97,7 @@ public class Wodan {
                         rejectFileDelimiter(description);
                         Todo todo = new Todo(description);
                         tasks.add(todo);
-                        storage.save(tasks);
+                        storage.save(tasks.getTasks());
                         ui.show("    You have accepted the following quest:");
                         ui.show("        " + todo.toString());
                         ui.show("     Now you have " + tasks.size() + " tasks in the list.");
@@ -107,7 +107,7 @@ public class Wodan {
                     case DEADLINE: {
                         Deadline deadline = getDeadline(arguments);
                         tasks.add(deadline);
-                        storage.save(tasks);
+                        storage.save(tasks.getTasks());
                         ui.show("    You have accepted the following quest:");
                         ui.show("        " + deadline.toString());
                         ui.show("     Now you have " + tasks.size() + " tasks in the list.");
@@ -117,7 +117,7 @@ public class Wodan {
                     case EVENT: {
                         Event event = getEvent(arguments);
                         tasks.add(event);
-                        storage.save(tasks);
+                        storage.save(tasks.getTasks());
                         ui.show("    You have accepted the following quest:");
                         ui.show("        " + event.toString());
                         ui.show("     Now you have " + tasks.size() + " tasks in the list.");
@@ -233,7 +233,7 @@ public class Wodan {
         return new Event(description, startAt, endAt);
     }
 
-    private static void printTasksOnDate(Ui ui, ArrayList<Task> tasks, String arguments)
+    private static void printTasksOnDate(Ui ui, TaskList tasks, String arguments)
             throws WodanException {
         if (arguments.trim().isEmpty()) {
             throw new WodanException(
@@ -242,18 +242,14 @@ public class Wodan {
         LocalDate date = TaskDateTime.parse(arguments.trim()).toLocalDate();
         String displayDate = TaskDateTime.formatDate(date);
         ui.showLine();
-        boolean isFound = false;
-        for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).occursOn(date)) {
-                if (!isFound) {
-                    ui.show("    The ravens found these quests on " + displayDate + ".\n");
-                    isFound = true;
-                }
-                ui.showNumberedTask(i + 1, tasks.get(i));
-            }
-        }
-        if (!isFound) {
+        ArrayList<Integer> numbers = tasks.taskNumbersOn(date);
+        if (numbers.isEmpty()) {
             ui.show("    The ravens found no quests on " + displayDate + ".");
+        } else {
+            ui.show("    The ravens found these quests on " + displayDate + ".\n");
+            for (int number : numbers) {
+                ui.showNumberedTask(number, tasks.get(number - 1));
+            }
         }
         ui.showLine();
     }
@@ -271,7 +267,7 @@ public class Wodan {
         }
     }
 
-    private static int getTaskNumber(String arguments, String x, ArrayList<Task> tasks, String message)
+    private static int getTaskNumber(String arguments, String x, TaskList tasks, String message)
             throws WodanException {
         int taskNumber;
         try {
