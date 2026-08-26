@@ -1,14 +1,23 @@
+import java.time.LocalDate;
+
 /**
  * A task that starts and ends at given times.
  */
 public class Event extends Task {
-    protected String startTime;
-    protected String endTime;
+    protected TaskDateTime startAt;
+    protected TaskDateTime endAt;
 
-    public Event(String description, String startTime, String endTime) {
+    /**
+     * Creates an event with the given start and end date-times.
+     *
+     * @param description What the event is.
+     * @param startAt When the event starts.
+     * @param endAt When the event ends.
+     */
+    public Event(String description, TaskDateTime startAt, TaskDateTime endAt) {
         super(description);
-        this.startTime = startTime;
-        this.endTime = endTime;
+        this.startAt = startAt;
+        this.endAt = endAt;
     }
 
     @Override
@@ -34,20 +43,28 @@ public class Event extends Task {
     @Override
     public String toString() {
         return String.format("[E][%s] %s (from: %s to: %s)",
-                getStatusIcon(), getDescription(), startTime, endTime);
+                getStatusIcon(), getDescription(),
+                startAt.toDisplayString(), endAt.toDisplayString());
     }
 
-    public String getStartTime() {
-        return this.startTime;
+    public TaskDateTime getStartAt() {
+        return this.startAt;
     }
 
-    public String getEndTime() {
-        return this.endTime;
+    public TaskDateTime getEndAt() {
+        return this.endAt;
+    }
+
+    @Override
+    public boolean occursOn(LocalDate date) {
+        LocalDate startDate = startAt.toLocalDate();
+        LocalDate endDate = endAt.toLocalDate();
+        return !date.isBefore(startDate) && !date.isAfter(endDate);
     }
 
     @Override
     public String toStorageString() {
         return "E | " + (super.isDone ? "1" : "0") + " | " + super.description
-                + " | " + startTime + " | " + endTime;
+                + " | " + startAt.toStorageString() + " | " + endAt.toStorageString();
     }
 }

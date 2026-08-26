@@ -1,3 +1,4 @@
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -51,7 +52,7 @@ public class Wodan {
             try {
                 if (command.trim().isEmpty()) {
                     throw new WodanException(
-                            "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, or bye.");
+                            "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.");
                 }
 
                 String[] words = command.trim().split(" ", 2);
@@ -154,9 +155,12 @@ public class Wodan {
                         }
                         System.out.println(line);
                         break;
+                    case ON: {
+                        printTasksOnDate(line, tasks, arguments);
+                        break;
+                    }
                     default:
-                        throw new WodanException(
-                                "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, delete, or bye.");
+                        throw new WodanException(Command.unknownCommandMessage());
                 }
             } catch (WodanException e) {
                 printMessage(line, e.getMessage());
@@ -170,24 +174,24 @@ public class Wodan {
         String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
         if (description.startsWith("/by")) {
             throw new WodanException(
-                    "A deadline needs a quest name before /by. Try: deadline return book /by Sunday");
+                    "A deadline needs a quest name before /by. Try: deadline return book /by 2019-12-02");
         }
         if (description.isEmpty()) {
             throw new WodanException(
-                    "A deadline needs a quest name and /by <when>. Try: deadline return book /by Sunday");
+                    "A deadline needs a quest name and /by <when>. Try: deadline return book /by 2019-12-02");
         }
         if (deadlineParts.length < 2) {
             throw new WodanException(
-                    "A deadline must include /by <when>. Try: deadline return book /by Sunday");
+                    "A deadline must include /by <when>. Try: deadline return book /by 2019-12-02");
         }
         if (by.isEmpty()) {
             throw new WodanException(
-                    "The ravens need a time after /by. Try: deadline return book /by Sunday");
+                    "The ravens need a time after /by. Try: deadline return book /by 2019-12-02");
         }
         rejectFileDelimiter(description);
         rejectFileDelimiter(by);
-        Deadline deadline = new Deadline(description, by);
-        return deadline;
+        TaskDateTime dueAt = TaskDateTime.parse(by);
+        return new Deadline(description, dueAt);
     }
 
     private static Event getEvent(String arguments) throws WodanException {
@@ -195,15 +199,18 @@ public class Wodan {
         String description = fromParts[0].trim();
         if (description.startsWith("/from")) {
             throw new WodanException(
-                    "An event needs a quest name before /from. Try: event meeting /from Mon 2pm /to 4pm");
+                    "An event needs a quest name before /from. "
+                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
         }
         if (description.isEmpty()) {
             throw new WodanException(
-                    "An event needs a name, /from <start>, and /to <end>. Try: event meeting /from Mon 2pm /to 4pm");
+                    "An event needs a name, /from <start>, and /to <end>. "
+                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
         }
         if (fromParts.length < 2) {
             throw new WodanException(
-                    "An event must include /from <start> and /to <end>. Try: event meeting /from Mon 2pm /to 4pm");
+                    "An event must include /from <start> and /to <end>. "
+                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
         }
 
         String rest = fromParts[1].trim();
@@ -222,20 +229,53 @@ public class Wodan {
         }
         if (from.isEmpty()) {
             throw new WodanException(
-                    "The ravens need a start time after /from. Try: event meeting /from Mon 2pm /to 4pm");
+                    "The ravens need a start time after /from. "
+                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
         }
         if (!hasTo) {
             throw new WodanException(
-                    "An event must include /to <end>. Try: event meeting /from Mon 2pm /to 4pm");
+                    "An event must include /to <end>. "
+                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
         }
         if (to.isEmpty()) {
             throw new WodanException(
-                    "The ravens need an end time after /to. Try: event meeting /from Mon 2pm /to 4pm");
+                    "The ravens need an end time after /to. "
+                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
         }
         rejectFileDelimiter(description);
         rejectFileDelimiter(from);
         rejectFileDelimiter(to);
-        return new Event(description, from, to);
+        TaskDateTime startAt = TaskDateTime.parse(from);
+        TaskDateTime endAt = TaskDateTime.parse(to);
+        if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
+            throw new WodanException("An event cannot end before it starts.");
+        }
+        return new Event(description, startAt, endAt);
+    }
+
+    private static void printTasksOnDate(String line, ArrayList<Task> tasks, String arguments)
+            throws WodanException {
+        if (arguments.trim().isEmpty()) {
+            throw new WodanException(
+                    "Which day should the ravens search? Try: on 2019-12-02");
+        }
+        LocalDate date = TaskDateTime.parse(arguments.trim()).toLocalDate();
+        String displayDate = TaskDateTime.formatDate(date);
+        System.out.println(line);
+        boolean isFound = false;
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).occursOn(date)) {
+                if (!isFound) {
+                    System.out.println("    The ravens found these quests on " + displayDate + ".\n");
+                    isFound = true;
+                }
+                System.out.printf("     %d. %s\n", i + 1, tasks.get(i).toString());
+            }
+        }
+        if (!isFound) {
+            System.out.println("    The ravens found no quests on " + displayDate + ".");
+        }
+        System.out.println(line);
     }
 
     /**

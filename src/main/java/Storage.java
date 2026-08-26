@@ -149,13 +149,25 @@ public class Storage {
                 if (parts.length != 4 || parts[3].isEmpty()) {
                     return null;
                 }
-                task = new Deadline(description, parts[3]);
+                TaskDateTime dueAt = TaskDateTime.parseStorage(parts[3]);
+                if (dueAt == null) {
+                    return null;
+                }
+                task = new Deadline(description, dueAt);
                 break;
             case "E":
                 if (parts.length != 5 || parts[3].isEmpty() || parts[4].isEmpty()) {
                     return null;
                 }
-                task = new Event(description, parts[3], parts[4]);
+                TaskDateTime startAt = TaskDateTime.parseStorage(parts[3]);
+                TaskDateTime endAt = TaskDateTime.parseStorage(parts[4]);
+                if (startAt == null || endAt == null) {
+                    return null;
+                }
+                if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
+                    return null;
+                }
+                task = new Event(description, startAt, endAt);
                 break;
             default:
                 return null;
