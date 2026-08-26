@@ -1,3 +1,11 @@
+package wodan.command;
+
+import wodan.WodanException;
+import wodan.storage.Storage;
+import wodan.task.Task;
+import wodan.task.TaskList;
+import wodan.ui.Ui;
+
 /**
  * Adds a task (todo, deadline, or event) to the list and saves.
  */
