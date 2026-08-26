@@ -10,6 +10,12 @@ import wodan.ui.Ui;
  */
 public abstract class Command {
     /**
+     * Creates a command to be executed against the task list.
+     */
+    protected Command() {
+    }
+
+    /**
      * Carries out this command.
      *
      * @param tasks The task list to read or change.

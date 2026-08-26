@@ -6,22 +6,50 @@ import java.time.LocalDate;
  * A task that the user can mark as done or not done.
  */
 public abstract class Task {
+    /** What the user asked to do. */
     protected String description;
+    /** Whether this task has been marked done. */
     protected boolean isDone;
 
+    /**
+     * Creates a task that is not done yet.
+     *
+     * @param description What the task is.
+     */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
     }
 
+    /**
+     * Marks this task as done.
+     */
     abstract public void markAsDone();
 
+    /**
+     * Marks this task as not done.
+     */
     abstract public void markAsUndone();
 
+    /**
+     * Returns the status icon for this task.
+     *
+     * @return {@code X} if done, or a space if not done.
+     */
     abstract public String getStatusIcon();
 
+    /**
+     * Returns the description of this task.
+     *
+     * @return What the task is.
+     */
     abstract public String getDescription();
 
+    /**
+     * Returns this task as the user sees it in list replies.
+     *
+     * @return Display text including type, status, and details.
+     */
     abstract public String toString();
 
     /**

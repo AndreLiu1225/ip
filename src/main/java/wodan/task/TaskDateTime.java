@@ -35,6 +35,9 @@ public class TaskDateTime {
     private static final DateTimeFormatter STORAGE_DATE_TIME =
             DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm");
 
+    /**
+     * Example date formats shown in parse-error messages.
+     */
     public static final String HINT = "2026-08-26 or 08/26/2019 1800";
 
     private final LocalDateTime dateTime;
@@ -89,6 +92,8 @@ public class TaskDateTime {
 
     /**
      * Returns this value as display text, with time only if one was given.
+     *
+     * @return Text such as {@code Dec 02 2019} or {@code Dec 02 2019, 6:00pm}.
      */
     public String toDisplayString() {
         if (hasTime) {
@@ -99,6 +104,8 @@ public class TaskDateTime {
 
     /**
      * Returns this value encoded for the save file.
+     *
+     * @return An ISO date, or a date-time with {@code T} if a time was given.
      */
     public String toStorageString() {
         if (hasTime) {
@@ -109,6 +116,8 @@ public class TaskDateTime {
 
     /**
      * Returns the calendar date of this value.
+     *
+     * @return The date, ignoring the clock time.
      */
     public LocalDate toLocalDate() {
         return dateTime.toLocalDate();
@@ -116,6 +125,8 @@ public class TaskDateTime {
 
     /**
      * Returns the stored date-time.
+     *
+     * @return Midnight if no time of day was specified.
      */
     public LocalDateTime toLocalDateTime() {
         return dateTime;
@@ -123,11 +134,20 @@ public class TaskDateTime {
 
     /**
      * Returns whether a time of day was specified.
+     *
+     * @return {@code true} if the original text included a time.
      */
     public boolean hasTime() {
         return hasTime;
     }
 
+    /**
+     * Returns a parsed date-time from {@code text}, or {@code null} if no supported pattern matches.
+     * Tries ISO date-times with {@code T}, then date-time patterns, then date-only patterns.
+     *
+     * @param text Raw date or date-time text.
+     * @return The parsed value, or {@code null} if {@code text} cannot be parsed.
+     */
     private static TaskDateTime tryParse(String text) {
         String trimmed = text.trim();
         if (trimmed.contains("T")) {

@@ -22,6 +22,14 @@ public class DeleteCommand extends Command {
         this.arguments = arguments;
     }
 
+    /**
+     * Deletes the numbered task from {@code tasks}, saves the list, and shows the removed task.
+     *
+     * @param tasks The task list to change.
+     * @param ui The user interface for the reply.
+     * @param storage The save file to update.
+     * @throws WodanException If the number is invalid or the list cannot be saved.
+     */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         int taskNumber = Parser.parseDeleteNumber(arguments, tasks);

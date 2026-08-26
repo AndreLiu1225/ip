@@ -6,8 +6,24 @@ import wodan.WodanException;
  * Words the chatbot recognises as the first token of a command line.
  */
 public enum CommandWord {
-    TODO, DEADLINE, EVENT, LIST,
-    MARK, UNMARK, DELETE, ON, BYE;
+    /** Add a todo task. */
+    TODO,
+    /** Add a deadline task. */
+    DEADLINE,
+    /** Add an event task. */
+    EVENT,
+    /** Show all tasks. */
+    LIST,
+    /** Mark a task as done. */
+    MARK,
+    /** Mark a task as not done. */
+    UNMARK,
+    /** Remove a task from the list. */
+    DELETE,
+    /** Show tasks that occur on a date. */
+    ON,
+    /** Stop the chatbot. */
+    BYE;
 
     /**
      * Returns the command word matching {@code word}, ignoring case.
@@ -26,6 +42,8 @@ public enum CommandWord {
 
     /**
      * Returns the message used when the user types an unknown command.
+     *
+     * @return The unknown-command error text.
      */
     public static String unknownCommandMessage() {
         return "That rune is unknown. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.";

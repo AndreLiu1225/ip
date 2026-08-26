@@ -39,6 +39,8 @@ public class Ui {
 
     /**
      * Returns whether another line of user input is available.
+     *
+     * @return {@code true} if a command line can be read.
      */
     public boolean hasCommand() {
         return in.hasNextLine();
@@ -46,6 +48,8 @@ public class Ui {
 
     /**
      * Returns the next line typed by the user.
+     *
+     * @return The raw command line.
      */
     public String readCommand() {
         return in.nextLine();
