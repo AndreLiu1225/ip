@@ -30,24 +30,14 @@ public class Wodan {
             if (!ui.hasCommand()) {
                 break label;
             }
-            String command = ui.readCommand();
+            String commandLine = ui.readCommand();
             try {
-                if (command.trim().isEmpty()) {
-                    throw new WodanException(
-                            "Silence is not a command. Speak todo, deadline, event, list, mark, unmark, delete, on, or bye.");
-                }
+                Command command = Parser.parseCommand(commandLine);
+                String arguments = Parser.parseArguments(commandLine);
 
-                String[] words = command.trim().split(" ", 2);
-                String commandWord = words[0];
-                String arguments = words.length > 1 ? words[1] : "";
-
-                switch (Command.parse(commandWord)) {
+                switch (command) {
                     case DELETE: {
-                        if (arguments.trim().isEmpty()) {
-                            throw new WodanException(
-                                    "Which quest is too burdensome? Try: delete 1");
-                        }
-                        int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: delete 1", tasks, "There are no quests to delete yet. Add one with todo, deadline, or event.");
+                        int taskNumber = Parser.parseDeleteNumber(arguments, tasks);
                         Task tbr = tasks.delete(taskNumber - 1);
                         storage.save(tasks.getTasks());
                         ui.showLine();
@@ -58,11 +48,7 @@ public class Wodan {
                         break;
                     }
                     case UNMARK: {
-                        if (arguments.trim().isEmpty()) {
-                            throw new WodanException(
-                                    "Which quest should the ravens unmark? Try: unmark 1");
-                        }
-                        int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: unmark 1", tasks, "There are no quests to unmark yet. Add one with todo, deadline, or event.");
+                        int taskNumber = Parser.parseUnmarkNumber(arguments, tasks);
                         Task currTask = tasks.get(taskNumber - 1);
                         currTask.markAsUndone();
                         storage.save(tasks.getTasks());
@@ -73,11 +59,7 @@ public class Wodan {
                         break;
                     }
                     case MARK: {
-                        if (arguments.trim().isEmpty()) {
-                            throw new WodanException(
-                                    "Which quest should the ravens mark? Try: mark 1");
-                        }
-                        int taskNumber = getTaskNumber(arguments, "' is not a quest number. Try: mark 1", tasks, "There are no quests to mark yet. Add one with todo, deadline, or event.");
+                        int taskNumber = Parser.parseMarkNumber(arguments, tasks);
                         Task currTask = tasks.get(taskNumber - 1);
                         currTask.markAsDone();
                         storage.save(tasks.getTasks());
@@ -89,13 +71,7 @@ public class Wodan {
                         break;
                     }
                     case TODO: {
-                        String description = arguments.trim();
-                        if (description.isEmpty()) {
-                            throw new WodanException(
-                                    "A todo needs a quest name. Try: todo borrow book");
-                        }
-                        rejectFileDelimiter(description);
-                        Todo todo = new Todo(description);
+                        Todo todo = Parser.parseTodo(arguments);
                         tasks.add(todo);
                         storage.save(tasks.getTasks());
                         ui.show("    You have accepted the following quest:");
@@ -105,7 +81,7 @@ public class Wodan {
                         break;
                     }
                     case DEADLINE: {
-                        Deadline deadline = getDeadline(arguments);
+                        Deadline deadline = Parser.parseDeadline(arguments);
                         tasks.add(deadline);
                         storage.save(tasks.getTasks());
                         ui.show("    You have accepted the following quest:");
@@ -115,7 +91,7 @@ public class Wodan {
                         break;
                     }
                     case EVENT: {
-                        Event event = getEvent(arguments);
+                        Event event = Parser.parseEvent(arguments);
                         tasks.add(event);
                         storage.save(tasks.getTasks());
                         ui.show("    You have accepted the following quest:");
@@ -148,98 +124,9 @@ public class Wodan {
         }
     }
 
-    private static Deadline getDeadline(String arguments) throws WodanException {
-        String[] deadlineParts = arguments.split("\\s+/by(?:\\s+|$)", 2);
-        String description = deadlineParts[0].trim();
-        String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
-        if (description.startsWith("/by")) {
-            throw new WodanException(
-                    "A deadline needs a quest name before /by. Try: deadline return book /by 2019-12-02");
-        }
-        if (description.isEmpty()) {
-            throw new WodanException(
-                    "A deadline needs a quest name and /by <when>. Try: deadline return book /by 2019-12-02");
-        }
-        if (deadlineParts.length < 2) {
-            throw new WodanException(
-                    "A deadline must include /by <when>. Try: deadline return book /by 2019-12-02");
-        }
-        if (by.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need a time after /by. Try: deadline return book /by 2019-12-02");
-        }
-        rejectFileDelimiter(description);
-        rejectFileDelimiter(by);
-        TaskDateTime dueAt = TaskDateTime.parse(by);
-        return new Deadline(description, dueAt);
-    }
-
-    private static Event getEvent(String arguments) throws WodanException {
-        String[] fromParts = arguments.split("\\s+/from(?:\\s+|$)", 2);
-        String description = fromParts[0].trim();
-        if (description.startsWith("/from")) {
-            throw new WodanException(
-                    "An event needs a quest name before /from. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (description.isEmpty()) {
-            throw new WodanException(
-                    "An event needs a name, /from <start>, and /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (fromParts.length < 2) {
-            throw new WodanException(
-                    "An event must include /from <start> and /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-
-        String rest = fromParts[1].trim();
-        String from;
-        String to;
-        boolean hasTo;
-        if (rest.equals("/to") || rest.startsWith("/to ") || rest.startsWith("/to\t")) {
-            from = "";
-            hasTo = true;
-            to = rest.substring("/to".length()).trim();
-        } else {
-            String[] toParts = rest.split("\\s+/to(?:\\s+|$)", 2);
-            from = toParts[0].trim();
-            hasTo = toParts.length >= 2;
-            to = hasTo ? toParts[1].trim() : "";
-        }
-        if (from.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need a start time after /from. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (!hasTo) {
-            throw new WodanException(
-                    "An event must include /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (to.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need an end time after /to. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        rejectFileDelimiter(description);
-        rejectFileDelimiter(from);
-        rejectFileDelimiter(to);
-        TaskDateTime startAt = TaskDateTime.parse(from);
-        TaskDateTime endAt = TaskDateTime.parse(to);
-        if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
-            throw new WodanException("An event cannot end before it starts.");
-        }
-        return new Event(description, startAt, endAt);
-    }
-
     private static void printTasksOnDate(Ui ui, TaskList tasks, String arguments)
             throws WodanException {
-        if (arguments.trim().isEmpty()) {
-            throw new WodanException(
-                    "Which day should the ravens search? Try: on 2019-12-02");
-        }
-        LocalDate date = TaskDateTime.parse(arguments.trim()).toLocalDate();
+        LocalDate date = Parser.parseOnDate(arguments);
         String displayDate = TaskDateTime.formatDate(date);
         ui.showLine();
         ArrayList<Integer> numbers = tasks.taskNumbersOn(date);
@@ -252,40 +139,5 @@ public class Wodan {
             }
         }
         ui.showLine();
-    }
-
-    /**
-     * Rejects values that contain {@code |}, which is reserved as the save-file delimiter.
-     *
-     * @param value User-provided task text to check.
-     * @throws WodanException If {@code value} contains {@code |}.
-     */
-    private static void rejectFileDelimiter(String value) throws WodanException {
-        if (value.contains("|")) {
-            throw new WodanException(
-                    "A quest cannot contain '|'. The ravens use that mark in the save file.");
-        }
-    }
-
-    private static int getTaskNumber(String arguments, String x, TaskList tasks, String message)
-            throws WodanException {
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(arguments.trim());
-        } catch (NumberFormatException e) {
-            throw new WodanException(
-                    "'" + arguments.trim() + x);
-        }
-        if (tasks.isEmpty()) {
-            throw new WodanException(
-                    message);
-        }
-        if (taskNumber < 1 || taskNumber > tasks.size()) {
-            throw new WodanException(
-                    "There is no quest " + taskNumber + ". The ravens watch over " + tasks.size()
-                            + (tasks.size() == 1 ? " quest" : " quests")
-                            + ". Try a number from 1 to " + tasks.size() + ".");
-        }
-        return taskNumber;
     }
 }
