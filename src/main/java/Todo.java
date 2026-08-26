@@ -1,3 +1,6 @@
+/**
+ * A todo task with no date or time attached.
+ */
 public class Todo extends Task {
 
     public Todo(String description) {
@@ -27,5 +30,10 @@ public class Todo extends Task {
     @Override
     public String toString() {
         return String.format("[T][%s] %s", getStatusIcon(), getDescription());
+    }
+
+    @Override
+    public String toStorageString() {
+        return "T | " + (super.isDone ? "1" : "0") + " | " + super.description;
     }
 }
