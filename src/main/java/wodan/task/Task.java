@@ -1,6 +1,7 @@
 package wodan.task;
 
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * A task that the user can mark as done or not done.
@@ -68,5 +69,17 @@ public abstract class Task {
      */
     public boolean occursOn(LocalDate date) {
         return false;
+    }
+
+    /**
+     * Returns {@code true} if this task's description contains {@code keyword}.
+     * Matching ignores letter case and looks only at the description, not dates.
+     *
+     * @param keyword Text to search for.
+     * @return Whether the description contains {@code keyword}.
+     */
+    public boolean hasDescriptionContaining(String keyword) {
+        return description.toLowerCase(Locale.ROOT)
+                .contains(keyword.toLowerCase(Locale.ROOT));
     }
 }

@@ -98,4 +98,21 @@ public class TaskList {
         }
         return numbers;
     }
+
+    /**
+     * Returns the 1-based list numbers of tasks whose description contains {@code keyword}.
+     * Matching ignores letter case. The numbers match those shown by {@code list}.
+     *
+     * @param keyword Text to search for in each description.
+     * @return 1-based numbers of matching tasks, in list order.
+     */
+    public ArrayList<Integer> taskNumbersMatching(String keyword) {
+        ArrayList<Integer> numbers = new ArrayList<>();
+        for (int i = 0; i < tasks.size(); i++) {
+            if (tasks.get(i).hasDescriptionContaining(keyword)) {
+                numbers.add(i + 1);
+            }
+        }
+        return numbers;
+    }
 }
