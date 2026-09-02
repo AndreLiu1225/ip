@@ -1,11 +1,12 @@
 package wodan.ui;
 
+import java.io.PrintStream;
 import java.util.Scanner;
 
 import wodan.task.Task;
 
 /**
- * Interactions with the user through the console.
+ * Interactions with the user through the console, or through a captured stream for the GUI.
  */
 public class Ui {
     private static final String LINE = "    ____________________________________________________________";
@@ -17,24 +18,36 @@ public class Ui {
             + "     \\/  \\/ \\___/ \\__,_|\\__,_|_| |_|\n";
 
     private final Scanner scanner;
+    private final PrintStream out;
 
     /**
      * Creates a UI that reads from standard input and writes to standard output.
      */
     public Ui() {
         this.scanner = new Scanner(System.in);
+        this.out = System.out;
+    }
+
+    /**
+     * Creates a UI that writes replies to {@code out} and does not read commands.
+     *
+     * @param out Destination for chatbot replies.
+     */
+    public Ui(PrintStream out) {
+        this.scanner = null;
+        this.out = out;
     }
 
     /**
      * Shows the banner and greeting.
      */
     public void showWelcome() {
-        System.out.println(BANNER);
-        System.out.println(LINE);
-        System.out.println("     Hail, wanderer. Wodan is listening.");
-        System.out.println("     What is your command?");
-        System.out.println(LINE);
-        System.out.println();
+        out.println(BANNER);
+        out.println(LINE);
+        out.println("     Hail, wanderer. Wodan is listening.");
+        out.println("     What is your command?");
+        out.println(LINE);
+        out.println();
     }
 
     /**
@@ -61,21 +74,21 @@ public class Ui {
      * @param message Text to show the user.
      */
     public void showError(String message) {
-        System.out.println("     " + message);
+        out.println("     " + message);
     }
 
     /**
      * Shows the farewell message. The surrounding divider lines are drawn by {@code Wodan.run}.
      */
     public void showGoodbye() {
-        System.out.println("     So it is written. Farewell, wanderer.");
+        out.println("     So it is written. Farewell, wanderer.");
     }
 
     /**
      * Shows the horizontal rule used around chatbot replies.
      */
     public void showLine() {
-        System.out.println(LINE);
+        out.println(LINE);
     }
 
     /**
@@ -84,7 +97,7 @@ public class Ui {
      * @param text Line to print, which may be empty.
      */
     public void show(String text) {
-        System.out.println(text);
+        out.println(text);
     }
 
     /**
@@ -94,6 +107,6 @@ public class Ui {
      * @param task Task to display.
      */
     public void showNumberedTask(int index, Task task) {
-        System.out.printf("     %d. %s\n", index, task.toString());
+        out.printf("     %d. %s\n", index, task.toString());
     }
 }

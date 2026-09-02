@@ -1,0 +1,123 @@
+.root-pane {
+    -fx-background-color: linear-gradient(to bottom, #16141c, #0e1016);
+    -fx-font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+    -fx-text-fill: white;
+}
+
+.header-bar {
+    -fx-background-color: rgba(18, 16, 24, 0.92);
+    -fx-border-color: transparent transparent #c9a22733 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.header-title {
+    -fx-font-family: "Palatino Linotype", Palatino, Georgia, serif;
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-letter-spacing: 1px;
+}
+
+.header-subtitle {
+    -fx-font-size: 12px;
+    -fx-text-fill: white;
+}
+
+.chat-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.chat-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.dialog-list {
+    -fx-background-color: transparent;
+}
+
+.dialog-bubble {
+    -fx-padding: 10 14 10 14;
+    -fx-background-radius: 16;
+}
+
+.dialog-text {
+    -fx-fill: #FFFFFF;
+    -fx-font-size: 13px;
+    -fx-font-smoothing-type: gray;
+}
+
+.user-dialog .dialog-bubble {
+    -fx-background-color: #2b3344;
+    -fx-background-radius: 16 16 4 16;
+}
+
+.wodan-dialog .dialog-bubble {
+    -fx-background-color: #241c14;
+    -fx-border-color: #c9a22766;
+    -fx-border-radius: 16 16 16 4;
+    -fx-background-radius: 16 16 16 4;
+    -fx-border-width: 1;
+}
+
+.composer-bar {
+    -fx-background-color: #14141c;
+    -fx-border-color: #c9a22733 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+.command-field {
+    -fx-background-color: #1e222c;
+    -fx-control-inner-background: #1e222c;
+    -fx-background-radius: 20;
+    -fx-border-radius: 20;
+    -fx-border-color: #3a3f4d;
+    -fx-border-width: 1;
+    -fx-text-fill: white;
+    -fx-text-inner-color: white;
+    -fx-prompt-text-fill: #c8c8c8;
+    -fx-highlight-text-fill: black;
+    -fx-padding: 10 16 10 16;
+    -fx-font-size: 13px;
+}
+
+.command-field .text {
+    -fx-fill: #FFFFFF;
+}
+
+.command-field:focused {
+    -fx-border-color: #c9a227;
+    -fx-background-color: #222632;
+}
+
+.send-button {
+    -fx-background-color: linear-gradient(to bottom, #d4b45a, #b08a2a);
+    -fx-text-fill: #1a140c;
+    -fx-font-weight: bold;
+    -fx-background-radius: 20;
+    -fx-padding: 10 18 10 18;
+    -fx-cursor: hand;
+}
+
+.send-button:hover {
+    -fx-background-color: linear-gradient(to bottom, #e2c56c, #c49a38);
+}
+
+.send-button:pressed {
+    -fx-background-color: #9a7620;
+}
+
+.send-button:disabled {
+    -fx-opacity: 0.45;
+}
+
+.scroll-bar:vertical {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar:vertical .thumb {
+    -fx-background-color: #c9a22755;
+    -fx-background-radius: 8;
+}
