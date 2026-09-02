@@ -54,8 +54,8 @@ public class TaskDateTimeTest {
 
     @Test
     public void parse_invalidDate_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> TaskDateTime.parse("2019-02-31"));
+        WodanException ex = assertThrows(WodanException.class, () -> TaskDateTime.parse(
+                "2019-02-31"));
         assertTrue(ex.getMessage().contains("2019-02-31"));
     }
 
@@ -66,8 +66,8 @@ public class TaskDateTimeTest {
 
     @Test
     public void parse_unreadableText_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> TaskDateTime.parse("not-a-date"));
+        WodanException ex = assertThrows(WodanException.class, () -> TaskDateTime.parse(
+                "not-a-date"));
         assertEquals(
                 "The ravens cannot read 'not-a-date'. Try: " + TaskDateTime.HINT,
                 ex.getMessage());
