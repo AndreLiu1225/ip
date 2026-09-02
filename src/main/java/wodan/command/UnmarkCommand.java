@@ -36,7 +36,7 @@ public class UnmarkCommand extends Command {
         Task currentTask = tasks.get(taskNumber - 1);
         currentTask.markAsUndone();
         storage.save(tasks.getTasks());
-        ui.show("    The ravens retract their approval.");
-        ui.show("     " + currentTask.toString());
+        ui.show("    The ravens retract their approval.",
+                "     " + currentTask.toString());
     }
 }

@@ -36,8 +36,8 @@ public class MarkCommand extends Command {
         Task currentTask = tasks.get(taskNumber - 1);
         currentTask.markAsDone();
         storage.save(tasks.getTasks());
-        ui.show("    One less burden to carry.");
-        ui.show("     " + currentTask.toString());
-        ui.show("");
+        ui.show("    One less burden to carry.",
+                "     " + currentTask.toString(),
+                "");
     }
 }

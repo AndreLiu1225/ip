@@ -26,12 +26,14 @@ public class TaskList {
     }
 
     /**
-     * Adds {@code task} to the end of the list.
+     * Adds each of {@code toAdd} to the end of the list, in the given order.
      *
-     * @param task Task to add.
+     * @param toAdd Tasks to append.
      */
-    public void add(Task task) {
-        tasks.add(task);
+    public void add(Task... toAdd) {
+        for (Task task : toAdd) {
+            tasks.add(task);
+        }
     }
 
     /**
