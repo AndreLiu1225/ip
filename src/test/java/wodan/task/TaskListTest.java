@@ -20,8 +20,7 @@ public class TaskListTest {
         TaskList tasks = new TaskList();
         Todo first = new Todo("first");
         Todo second = new Todo("second");
-        tasks.add(first);
-        tasks.add(second);
+        tasks.add(first, second);
         assertEquals(2, tasks.size());
         assertEquals(first, tasks.get(0));
         Task removed = tasks.delete(0);

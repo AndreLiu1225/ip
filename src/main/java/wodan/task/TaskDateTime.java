@@ -161,16 +161,42 @@ public class TaskDateTime {
                 }
             }
         }
-        for (DateTimeFormatter formatter : DATE_TIME_FORMATTERS) {
+        TaskDateTime withTime = parseUsingDateTimes(trimmed, DATE_TIME_FORMATTERS);
+        if (withTime != null) {
+            return withTime;
+        }
+        return parseUsingDates(trimmed, DATE_FORMATTERS);
+    }
+
+    /**
+     * Returns a date-time parsed with the first matching formatter, or {@code null}.
+     *
+     * @param text Trimmed date-time text.
+     * @param formatters Patterns to try, in order.
+     * @return The parsed value, or {@code null} if none match.
+     */
+    private static TaskDateTime parseUsingDateTimes(String text, DateTimeFormatter... formatters) {
+        for (DateTimeFormatter formatter : formatters) {
             try {
-                return new TaskDateTime(LocalDateTime.parse(trimmed, formatter), true);
+                return new TaskDateTime(LocalDateTime.parse(text, formatter), true);
             } catch (DateTimeParseException e) {
                 // Try the next pattern.
             }
         }
-        for (DateTimeFormatter formatter : DATE_FORMATTERS) {
+        return null;
+    }
+
+    /**
+     * Returns a date-only value parsed with the first matching formatter, or {@code null}.
+     *
+     * @param text Trimmed date text.
+     * @param formatters Patterns to try, in order.
+     * @return The parsed value at midnight, or {@code null} if none match.
+     */
+    private static TaskDateTime parseUsingDates(String text, DateTimeFormatter... formatters) {
+        for (DateTimeFormatter formatter : formatters) {
             try {
-                LocalDate date = LocalDate.parse(trimmed, formatter);
+                LocalDate date = LocalDate.parse(text, formatter);
                 return new TaskDateTime(date.atStartOfDay(), false);
             } catch (DateTimeParseException e) {
                 // Try the next pattern.

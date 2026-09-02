@@ -43,11 +43,11 @@ public class Ui {
      */
     public void showWelcome() {
         out.println(BANNER);
-        out.println(LINE);
-        out.println("     Hail, wanderer. Wodan is listening.");
-        out.println("     What is your command?");
-        out.println(LINE);
-        out.println();
+        show(LINE,
+                "     Hail, wanderer. Wodan is listening.",
+                "     What is your command?",
+                LINE,
+                "");
     }
 
     /**
@@ -92,12 +92,14 @@ public class Ui {
     }
 
     /**
-     * Shows one line of text, followed by a newline.
+     * Shows each of {@code lines} on its own line.
      *
-     * @param text Line to print, which may be empty.
+     * @param lines Lines to print, which may be empty strings. Zero lines prints nothing.
      */
-    public void show(String text) {
-        out.println(text);
+    public void show(String... lines) {
+        for (String line : lines) {
+            out.println(line);
+        }
     }
 
     /**

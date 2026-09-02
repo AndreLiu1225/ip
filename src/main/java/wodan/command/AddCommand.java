@@ -33,8 +33,8 @@ public class AddCommand extends Command {
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         tasks.add(task);
         storage.save(tasks.getTasks());
-        ui.show("    You have accepted the following quest:");
-        ui.show("        " + task.toString());
-        ui.show("     Now you have " + tasks.size() + " tasks in the list.");
+        ui.show("    You have accepted the following quest:",
+                "        " + task.toString(),
+                "     Now you have " + tasks.size() + " tasks in the list.");
     }
 }
