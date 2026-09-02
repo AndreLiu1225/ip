@@ -101,8 +101,8 @@ public class ParserTest {
 
     @Test
     public void parse_deadlineMissingBy_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parse("deadline return book"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline return book"));
         assertEquals(
                 "A deadline must include /by <when>. Try: deadline return book /by 2019-12-02",
                 ex.getMessage());
@@ -110,8 +110,8 @@ public class ParserTest {
 
     @Test
     public void parse_deadlineDescriptionAfterBy_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parse("deadline /by 2019-12-02"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline /by 2019-12-02"));
         assertEquals(
                 "A deadline needs a quest name before /by. Try: deadline return book /by 2019-12-02",
                 ex.getMessage());
@@ -119,15 +119,15 @@ public class ParserTest {
 
     @Test
     public void parse_eventEndsBeforeStart_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parse("event meeting /from 2019-12-02 1600 /to 2019-12-02 1400"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019-12-02 1600 /to 2019-12-02 1400"));
         assertEquals("An event cannot end before it starts.", ex.getMessage());
     }
 
     @Test
     public void parse_eventMissingTo_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parse("event meeting /from 2019-12-02 1400"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019-12-02 1400"));
         assertEquals(
                 "An event must include /to <end>. "
                         + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
@@ -145,8 +145,8 @@ public class ParserTest {
     @Test
     public void parseDeleteNumber_emptyList_exceptionThrown() {
         TaskList tasks = new TaskList();
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parseDeleteNumber("1", tasks));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseDeleteNumber(
+                "1", tasks));
         assertEquals(
                 "There are no quests to delete yet. Add one with todo, deadline, or event.",
                 ex.getMessage());
@@ -156,8 +156,8 @@ public class ParserTest {
     public void parseDeleteNumber_outOfRange_exceptionThrown() {
         TaskList tasks = new TaskList();
         tasks.add(new Todo("a"));
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parseDeleteNumber("3", tasks));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseDeleteNumber(
+                "3", tasks));
         assertEquals(
                 "There is no quest 3. The ravens watch over 1 quest. Try a number from 1 to 1.",
                 ex.getMessage());
@@ -167,22 +167,22 @@ public class ParserTest {
     public void parseDeleteNumber_notANumber_exceptionThrown() {
         TaskList tasks = new TaskList();
         tasks.add(new Todo("a"));
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parseDeleteNumber("first", tasks));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseDeleteNumber(
+                "first", tasks));
         assertEquals("'first' is not a quest number. Try: delete 1", ex.getMessage());
     }
 
     @Test
     public void parseDeleteNumber_missingNumber_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parseDeleteNumber("", new TaskList()));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseDeleteNumber(
+                "", new TaskList()));
         assertEquals("Which quest is too burdensome? Try: delete 1", ex.getMessage());
     }
 
     @Test
     public void parseMarkNumber_missingNumber_exceptionThrown() {
-        WodanException ex = assertThrows(WodanException.class,
-                () -> Parser.parseMarkNumber("  ", new TaskList()));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseMarkNumber(
+                "  ", new TaskList()));
         assertEquals("Which quest should the ravens mark? Try: mark 1", ex.getMessage());
     }
 

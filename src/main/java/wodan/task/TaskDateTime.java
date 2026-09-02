@@ -13,6 +13,11 @@ import wodan.WodanException;
  * A calendar date, optionally with a time of day, stored as a {@link LocalDateTime}.
  */
 public class TaskDateTime {
+    /**
+     * Example date formats shown in parse-error messages.
+     */
+    public static final String HINT = "2026-08-26 or 08/26/2019 1800";
+
     private static final DateTimeFormatter[] DATE_TIME_FORMATTERS = {
         DateTimeFormatter.ofPattern("uuuu-MM-dd HHmm")
                 .withResolverStyle(ResolverStyle.STRICT),
@@ -34,11 +39,6 @@ public class TaskDateTime {
             DateTimeFormatter.ofPattern("MMM dd yyyy, h:mma", Locale.ENGLISH);
     private static final DateTimeFormatter STORAGE_DATE_TIME =
             DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm");
-
-    /**
-     * Example date formats shown in parse-error messages.
-     */
-    public static final String HINT = "2026-08-26 or 08/26/2019 1800";
 
     private final LocalDateTime dateTime;
     private final boolean hasTime;

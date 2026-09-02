@@ -37,7 +37,7 @@ public class TodoTest {
     }
 
     @Test
-    public void getStatusIcon_markedTodo_x() {
+    public void getStatusIcon_markedTodo_showsX() {
         Todo todo = new Todo("borrow book");
         todo.markAsDone();
         assertEquals("X", todo.getStatusIcon());
