@@ -36,6 +36,7 @@ dependencies {
     implementation("org.openjfx:javafx-controls:${javaFxVersion}:linux")
     implementation("org.openjfx:javafx-fxml:${javaFxVersion}:win")
     implementation("org.openjfx:javafx-fxml:${javaFxVersion}:mac")
+    implementation("org.openjfx:javafx-fxml:${javaFxVersion}:linux")
     implementation("org.openjfx:javafx-graphics:${javaFxVersion}:win")
     implementation("org.openjfx:javafx-graphics:${javaFxVersion}:mac")
     implementation("org.openjfx:javafx-graphics:${javaFxVersion}:linux")
@@ -56,7 +57,7 @@ test {
 }
 
 application {
-    mainClass = 'wodan.Wodan'
+    mainClass.set("wodan.Launcher")
 }
 
 jar {
