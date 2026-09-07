@@ -25,38 +25,6 @@ public class Event extends Task {
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markAsDone() {
-        super.isDone = true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markAsUndone() {
-        super.isDone = false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getStatusIcon() {
-        return super.isDone ? "X" : " ";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDescription() {
-        return super.description;
-    }
-
-    /**
      * Returns this event as {@code [E][status] description (from: start to: end)}.
      *
      * @return Display text for list replies.

@@ -25,26 +25,34 @@ public abstract class Task {
     /**
      * Marks this task as done.
      */
-    public abstract void markAsDone();
+    public void markAsDone() {
+        isDone = true;
+    }
 
     /**
      * Marks this task as not done.
      */
-    public abstract void markAsUndone();
+    public void markAsUndone() {
+        isDone = false;
+    }
 
     /**
      * Returns the status icon for this task.
      *
      * @return {@code X} if done, or a space if not done.
      */
-    public abstract String getStatusIcon();
+    public String getStatusIcon() {
+        return isDone ? "X" : " ";
+    }
 
     /**
      * Returns the description of this task.
      *
      * @return What the task is.
      */
-    public abstract String getDescription();
+    public String getDescription() {
+        return description;
+    }
 
     /**
      * Returns this task as the user sees it in list replies.
