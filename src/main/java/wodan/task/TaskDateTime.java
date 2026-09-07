@@ -2,6 +2,7 @@ package wodan.task;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
@@ -50,6 +51,9 @@ public class TaskDateTime {
      * @param hasTime Whether a time of day was specified.
      */
     public TaskDateTime(LocalDateTime dateTime, boolean hasTime) {
+        assert dateTime != null : "dateTime should not be null";
+        assert hasTime || dateTime.toLocalTime().equals(LocalTime.MIDNIGHT)
+                : "Date-only values are stored at midnight";
         this.dateTime = dateTime;
         this.hasTime = hasTime;
     }
