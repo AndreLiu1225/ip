@@ -9,6 +9,11 @@ import wodan.task.Task;
  * Interactions with the user through the console, or through a captured stream for the GUI.
  */
 public class Ui {
+    /** First line of the greeting, without console indent. */
+    public static final String GREETING_HAIL = "Hail, wanderer. Wodan is listening.";
+    /** Second line of the greeting, without console indent. */
+    public static final String GREETING_PROMPT = "What is your command?";
+
     private static final String LINE = "    ____________________________________________________________";
     private static final String BANNER = " __          __       _\n"
             + " \\ \\        / /      | |\n"
@@ -16,10 +21,6 @@ public class Ui {
             + "   \\ \\/  \\/ / _ \\ / _` |/ _` | '_ \\\n"
             + "    \\  /\\  / (_) | (_| | (_| | | | |\n"
             + "     \\/  \\/ \\___/ \\__,_|\\__,_|_| |_|\n";
-    /** First line of the greeting, without console indent. */
-    public static final String GREETING_HAIL = "Hail, wanderer. Wodan is listening.";
-    /** Second line of the greeting, without console indent. */
-    public static final String GREETING_PROMPT = "What is your command?";
 
     private final Scanner scanner;
     private final PrintStream out;

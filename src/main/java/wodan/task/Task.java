@@ -7,9 +7,6 @@ import java.util.Locale;
  * A task that the user can mark as done or not done.
  */
 public abstract class Task {
-    private static final String STATUS_DONE_ICON = "X";
-    private static final String STATUS_NOT_DONE_ICON = " ";
-
     /** Save-file type code for a todo. */
     public static final String STORAGE_TYPE_TODO = "T";
     /** Save-file type code for a deadline. */
@@ -20,6 +17,9 @@ public abstract class Task {
     public static final String STORAGE_DONE = "1";
     /** Save-file flag for a task that is not done. */
     public static final String STORAGE_NOT_DONE = "0";
+
+    private static final String STATUS_DONE_ICON = "X";
+    private static final String STATUS_NOT_DONE_ICON = " ";
 
     /** What the user asked to do. */
     private String description;
