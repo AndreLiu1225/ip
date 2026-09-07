@@ -22,6 +22,15 @@ import wodan.task.Todo;
  * Interprets a user command line: the command word, its arguments, and task details.
  */
 public class Parser {
+    private static final String BY_MARKER = "/by";
+    private static final String FROM_MARKER = "/from";
+    private static final String TO_MARKER = "/to";
+    private static final String BY_SPLIT_PATTERN = "\\s+" + BY_MARKER + "(?:\\s+|$)";
+    private static final String FROM_SPLIT_PATTERN = "\\s+" + FROM_MARKER + "(?:\\s+|$)";
+    private static final String TO_SPLIT_PATTERN = "\\s+" + TO_MARKER + "(?:\\s+|$)";
+    private static final String EVENT_USAGE = "Try: event meeting " + FROM_MARKER
+            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600";
+
     /**
      * Prevents instantiation; command parsing is done through static methods.
      */
@@ -36,8 +45,9 @@ public class Parser {
      * @throws WodanException If the line is empty, unknown, or has invalid arguments.
      */
     public static Command parse(String fullCommand) throws WodanException {
-        CommandWord commandWord = parseCommandWord(fullCommand);
-        String arguments = parseArguments(fullCommand);
+        String[] words = splitCommandLine(fullCommand);
+        CommandWord commandWord = CommandWord.parse(words[0]);
+        String arguments = words.length > 1 ? words[1] : "";
         switch (commandWord) {
             case TODO:
                 return new AddCommand(parseTodo(arguments));
@@ -65,31 +75,20 @@ public class Parser {
     }
 
     /**
-     * Returns the command word matching the first word of {@code fullCommand}.
+     * Splits {@code fullCommand} into the command word and the remaining argument text.
      *
      * @param fullCommand One line typed by the user.
-     * @return The recognized command word.
-     * @throws WodanException If the line is empty or the command word is unknown.
+     * @return The first word, then the rest of the line if any.
+     * @throws WodanException If the line is empty.
      */
-    private static CommandWord parseCommandWord(String fullCommand) throws WodanException {
-        if (fullCommand.trim().isEmpty()) {
+    private static String[] splitCommandLine(String fullCommand) throws WodanException {
+        String trimmed = fullCommand.trim();
+        if (trimmed.isEmpty()) {
             throw new WodanException(
                     "Silence is not a command. Speak todo, deadline, event, list, mark, "
                             + "unmark, delete, on, find, or bye.");
         }
-        String[] words = fullCommand.trim().split(" ", 2);
-        return CommandWord.parse(words[0]);
-    }
-
-    /**
-     * Returns the text after the command word, or an empty string if there is none.
-     *
-     * @param fullCommand One line typed by the user.
-     * @return The argument text, which may be empty.
-     */
-    private static String parseArguments(String fullCommand) {
-        String[] words = fullCommand.trim().split(" ", 2);
-        return words.length > 1 ? words[1] : "";
+        return trimmed.split(" ", 2);
     }
 
     /**
@@ -117,24 +116,28 @@ public class Parser {
      * @throws WodanException If the description, {@code /by} time, or date is invalid.
      */
     private static Deadline parseDeadline(String arguments) throws WodanException {
-        String[] deadlineParts = arguments.split("\\s+/by(?:\\s+|$)", 2);
+        String[] deadlineParts = arguments.split(BY_SPLIT_PATTERN, 2);
         String description = deadlineParts[0].trim();
         String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
-        if (description.startsWith("/by")) {
+        if (description.startsWith(BY_MARKER)) {
             throw new WodanException(
-                    "A deadline needs a quest name before /by. Try: deadline return book /by 2019-12-02");
+                    "A deadline needs a quest name before " + BY_MARKER
+                            + ". Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         if (description.isEmpty()) {
             throw new WodanException(
-                    "A deadline needs a quest name and /by <when>. Try: deadline return book /by 2019-12-02");
+                    "A deadline needs a quest name and " + BY_MARKER
+                            + " <when>. Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         if (deadlineParts.length < 2) {
             throw new WodanException(
-                    "A deadline must include /by <when>. Try: deadline return book /by 2019-12-02");
+                    "A deadline must include " + BY_MARKER
+                            + " <when>. Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         if (by.isEmpty()) {
             throw new WodanException(
-                    "The ravens need a time after /by. Try: deadline return book /by 2019-12-02");
+                    "The ravens need a time after " + BY_MARKER
+                            + ". Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         rejectFileDelimiter(description);
         rejectFileDelimiter(by);
@@ -150,62 +153,96 @@ public class Parser {
      * @throws WodanException If the description, times, or date range is invalid.
      */
     private static Event parseEvent(String arguments) throws WodanException {
-        String[] fromParts = arguments.split("\\s+/from(?:\\s+|$)", 2);
+        String[] fromParts = arguments.split(FROM_SPLIT_PATTERN, 2);
         String description = fromParts[0].trim();
-        if (description.startsWith("/from")) {
-            throw new WodanException(
-                    "An event needs a quest name before /from. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (description.isEmpty()) {
-            throw new WodanException(
-                    "An event needs a name, /from <start>, and /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (fromParts.length < 2) {
-            throw new WodanException(
-                    "An event must include /from <start> and /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
+        rejectInvalidEventDescription(description, fromParts.length);
 
-        String rest = fromParts[1].trim();
-        String from;
-        String to;
-        boolean hasTo;
-        if (rest.equals("/to") || rest.startsWith("/to ") || rest.startsWith("/to\t")) {
-            from = "";
-            hasTo = true;
-            to = rest.substring("/to".length()).trim();
-        } else {
-            String[] toParts = rest.split("\\s+/to(?:\\s+|$)", 2);
-            from = toParts[0].trim();
-            hasTo = toParts.length >= 2;
-            to = hasTo ? toParts[1].trim() : "";
-        }
-        if (from.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need a start time after /from. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (!hasTo) {
-            throw new WodanException(
-                    "An event must include /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
-        if (to.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need an end time after /to. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
-        }
+        EventTimeRange times = splitEventTimes(fromParts[1].trim());
+        rejectInvalidEventTimes(times);
+
         rejectFileDelimiter(description);
-        rejectFileDelimiter(from);
-        rejectFileDelimiter(to);
-        TaskDateTime startAt = TaskDateTime.parse(from);
-        TaskDateTime endAt = TaskDateTime.parse(to);
+        rejectFileDelimiter(times.from);
+        rejectFileDelimiter(times.to);
+        TaskDateTime startAt = TaskDateTime.parse(times.from);
+        TaskDateTime endAt = TaskDateTime.parse(times.to);
         if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
             throw new WodanException("An event cannot end before it starts.");
         }
         return new Event(description, startAt, endAt);
+    }
+
+    /**
+     * Rejects an event with a missing name or a missing {@code /from} marker.
+     *
+     * @param description Text before {@code /from}.
+     * @param fromPartCount Number of pieces after splitting on {@code /from}.
+     * @throws WodanException If the description or {@code /from} is missing.
+     */
+    private static void rejectInvalidEventDescription(String description, int fromPartCount)
+            throws WodanException {
+        if (description.startsWith(FROM_MARKER)) {
+            throw new WodanException(
+                    "An event needs a quest name before " + FROM_MARKER + ". " + EVENT_USAGE);
+        }
+        if (description.isEmpty()) {
+            throw new WodanException(
+                    "An event needs a name, " + FROM_MARKER + " <start>, and " + TO_MARKER + " <end>. "
+                            + EVENT_USAGE);
+        }
+        if (fromPartCount < 2) {
+            throw new WodanException(
+                    "An event must include " + FROM_MARKER + " <start> and " + TO_MARKER + " <end>. "
+                            + EVENT_USAGE);
+        }
+    }
+
+    /**
+     * Splits the text after {@code /from} into start and end values.
+     *
+     * @param rest Text after the {@code /from} marker.
+     * @return The start text, end text, and whether {@code /to} was present.
+     */
+    private static EventTimeRange splitEventTimes(String rest) {
+        if (isToMarkerWithoutFrom(rest)) {
+            return new EventTimeRange("", rest.substring(TO_MARKER.length()).trim(), true);
+        }
+        String[] toParts = rest.split(TO_SPLIT_PATTERN, 2);
+        boolean hasToMarker = toParts.length >= 2;
+        String to = hasToMarker ? toParts[1].trim() : "";
+        return new EventTimeRange(toParts[0].trim(), to, hasToMarker);
+    }
+
+    /**
+     * Returns {@code true} if {@code rest} is a {@code /to} marker with no start time before it.
+     *
+     * @param rest Text after {@code /from}.
+     * @return Whether the start time is missing because {@code /to} comes next.
+     */
+    private static boolean isToMarkerWithoutFrom(String rest) {
+        return rest.equals(TO_MARKER)
+                || rest.startsWith(TO_MARKER + " ")
+                || rest.startsWith(TO_MARKER + "\t");
+    }
+
+    /**
+     * Rejects an event with a missing start, a missing {@code /to}, or a missing end.
+     *
+     * @param times Split start and end text.
+     * @throws WodanException If a required time part is missing.
+     */
+    private static void rejectInvalidEventTimes(EventTimeRange times) throws WodanException {
+        if (times.from.isEmpty()) {
+            throw new WodanException(
+                    "The ravens need a start time after " + FROM_MARKER + ". " + EVENT_USAGE);
+        }
+        if (!times.hasToMarker) {
+            throw new WodanException(
+                    "An event must include " + TO_MARKER + " <end>. " + EVENT_USAGE);
+        }
+        if (times.to.isEmpty()) {
+            throw new WodanException(
+                    "The ravens need an end time after " + TO_MARKER + ". " + EVENT_USAGE);
+        }
     }
 
     /**
@@ -309,15 +346,16 @@ public class Parser {
      */
     private static int parseTaskNumber(String arguments, TaskList tasks, String missingMessage,
             String notANumberSuffix, String emptyListMessage) throws WodanException {
-        if (arguments.trim().isEmpty()) {
+        String trimmed = arguments.trim();
+        if (trimmed.isEmpty()) {
             throw new WodanException(missingMessage);
         }
         int taskNumber;
         try {
-            taskNumber = Integer.parseInt(arguments.trim());
+            taskNumber = Integer.parseInt(trimmed);
         } catch (NumberFormatException e) {
             throw new WodanException(
-                    "'" + arguments.trim() + notANumberSuffix);
+                    "'" + trimmed + notANumberSuffix);
         }
         if (tasks.isEmpty()) {
             throw new WodanException(emptyListMessage);
@@ -325,5 +363,20 @@ public class Parser {
         assert taskNumber >= 1 && taskNumber <= tasks.size()
                 : "parseTaskNumber must return a number that exists in the list";
         return taskNumber;
+    }
+
+    /**
+     * Start and end text taken from an event command after {@code /from}.
+     */
+    private static class EventTimeRange {
+        private final String from;
+        private final String to;
+        private final boolean hasToMarker;
+
+        private EventTimeRange(String from, String to, boolean hasToMarker) {
+            this.from = from;
+            this.to = to;
+            this.hasToMarker = hasToMarker;
+        }
     }
 }

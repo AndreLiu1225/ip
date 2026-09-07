@@ -7,10 +7,24 @@ import java.util.Locale;
  * A task that the user can mark as done or not done.
  */
 public abstract class Task {
+    /** Save-file type code for a todo. */
+    public static final String STORAGE_TYPE_TODO = "T";
+    /** Save-file type code for a deadline. */
+    public static final String STORAGE_TYPE_DEADLINE = "D";
+    /** Save-file type code for an event. */
+    public static final String STORAGE_TYPE_EVENT = "E";
+    /** Save-file flag for a done task. */
+    public static final String STORAGE_DONE = "1";
+    /** Save-file flag for a task that is not done. */
+    public static final String STORAGE_NOT_DONE = "0";
+
+    private static final String STATUS_DONE_ICON = "X";
+    private static final String STATUS_NOT_DONE_ICON = " ";
+
     /** What the user asked to do. */
-    protected String description;
+    private String description;
     /** Whether this task has been marked done. */
-    protected boolean isDone;
+    private boolean isDone;
 
     /**
      * Creates a task that is not done yet.
@@ -26,26 +40,54 @@ public abstract class Task {
     /**
      * Marks this task as done.
      */
-    public abstract void markAsDone();
+    public void markAsDone() {
+        isDone = true;
+    }
 
     /**
      * Marks this task as not done.
      */
-    public abstract void markAsUndone();
+    public void markAsUndone() {
+        isDone = false;
+    }
 
     /**
      * Returns the status icon for this task.
      *
      * @return {@code X} if done, or a space if not done.
      */
-    public abstract String getStatusIcon();
+    public String getStatusIcon() {
+        return isDone ? STATUS_DONE_ICON : STATUS_NOT_DONE_ICON;
+    }
 
     /**
      * Returns the description of this task.
      *
      * @return What the task is.
      */
-    public abstract String getDescription();
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Returns the shared start of a save-file line: type, done flag, and description.
+     *
+     * @param typeCode One of the {@code STORAGE_TYPE_*} constants.
+     * @return Prefix such as {@code T | 0 | borrow book}.
+     */
+    protected String toStoragePrefix(String typeCode) {
+        String doneFlag = isDone ? STORAGE_DONE : STORAGE_NOT_DONE;
+        return typeCode + " | " + doneFlag + " | " + description;
+    }
+
+    /**
+     * Returns whether this task has been marked done.
+     *
+     * @return {@code true} if done.
+     */
+    public boolean isDone() {
+        return isDone;
+    }
 
     /**
      * Returns this task as the user sees it in list replies.

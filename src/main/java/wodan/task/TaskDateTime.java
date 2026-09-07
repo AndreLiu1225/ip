@@ -155,21 +155,32 @@ public class TaskDateTime {
     private static TaskDateTime tryParse(String text) {
         String trimmed = text.trim();
         if (trimmed.contains("T")) {
-            try {
-                return new TaskDateTime(LocalDateTime.parse(trimmed), true);
-            } catch (DateTimeParseException e) {
-                try {
-                    return new TaskDateTime(LocalDateTime.parse(trimmed, STORAGE_DATE_TIME), true);
-                } catch (DateTimeParseException e2) {
-                    return null;
-                }
-            }
+            return parseIsoDateTime(trimmed);
         }
         TaskDateTime withTime = parseUsingDateTimes(trimmed, DATE_TIME_FORMATTERS);
         if (withTime != null) {
             return withTime;
         }
         return parseUsingDates(trimmed, DATE_FORMATTERS);
+    }
+
+    /**
+     * Returns an ISO date-time with {@code T}, or {@code null} if neither ISO form matches.
+     *
+     * @param text Trimmed text that contains {@code T}.
+     * @return The parsed value, or {@code null}.
+     */
+    private static TaskDateTime parseIsoDateTime(String text) {
+        try {
+            return new TaskDateTime(LocalDateTime.parse(text), true);
+        } catch (DateTimeParseException e) {
+            // Try the save-file formatter next.
+        }
+        try {
+            return new TaskDateTime(LocalDateTime.parse(text, STORAGE_DATE_TIME), true);
+        } catch (DateTimeParseException e) {
+            return null;
+        }
     }
 
     /**
