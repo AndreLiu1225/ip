@@ -21,6 +21,10 @@ import wodan.task.Todo;
  * {@code Path.of("data", "wodan.txt")} so it works on every operating system.
  */
 public class Storage {
+    private static final int TODO_FIELD_COUNT = 3;
+    private static final int DEADLINE_FIELD_COUNT = 4;
+    private static final int EVENT_FIELD_COUNT = 5;
+
     private final Path filePath;
     private String loadWarning;
 
@@ -134,7 +138,7 @@ public class Storage {
      */
     private Task parseTask(String line) {
         String[] parts = splitFields(line);
-        if (parts.length < 3) {
+        if (parts.length < TODO_FIELD_COUNT) {
             return null;
         }
 
@@ -149,45 +153,89 @@ public class Storage {
             return null;
         }
 
-        Task task;
-        switch (type) {
-            case Task.STORAGE_TYPE_TODO:
-                if (parts.length != 3) {
-                    return null;
-                }
-                task = new Todo(description);
-                break;
-            case Task.STORAGE_TYPE_DEADLINE:
-                if (parts.length != 4 || parts[3].isEmpty()) {
-                    return null;
-                }
-                TaskDateTime dueAt = TaskDateTime.parseStorage(parts[3]);
-                if (dueAt == null) {
-                    return null;
-                }
-                task = new Deadline(description, dueAt);
-                break;
-            case Task.STORAGE_TYPE_EVENT:
-                if (parts.length != 5 || parts[3].isEmpty() || parts[4].isEmpty()) {
-                    return null;
-                }
-                TaskDateTime startAt = TaskDateTime.parseStorage(parts[3]);
-                TaskDateTime endAt = TaskDateTime.parseStorage(parts[4]);
-                if (startAt == null || endAt == null) {
-                    return null;
-                }
-                if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
-                    return null;
-                }
-                task = new Event(description, startAt, endAt);
-                break;
-            default:
-                return null;
+        Task task = parseTaskByType(type, description, parts);
+        if (task == null) {
+            return null;
         }
         if (isDone) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /**
+     * Returns a task of {@code type}, or {@code null} if the fields do not match that type.
+     *
+     * @param type Save-file type code.
+     * @param description Task description field.
+     * @param parts All fields from the line.
+     * @return The task, or {@code null} if the line is corrupt.
+     */
+    private Task parseTaskByType(String type, String description, String[] parts) {
+        switch (type) {
+            case Task.STORAGE_TYPE_TODO:
+                return parseStoredTodo(description, parts);
+            case Task.STORAGE_TYPE_DEADLINE:
+                return parseStoredDeadline(description, parts);
+            case Task.STORAGE_TYPE_EVENT:
+                return parseStoredEvent(description, parts);
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Returns a todo if {@code parts} has exactly the todo field count.
+     *
+     * @param description Task description field.
+     * @param parts All fields from the line.
+     * @return The todo, or {@code null} if the field count is wrong.
+     */
+    private Todo parseStoredTodo(String description, String[] parts) {
+        if (parts.length != TODO_FIELD_COUNT) {
+            return null;
+        }
+        return new Todo(description);
+    }
+
+    /**
+     * Returns a deadline if {@code parts} has a parseable due date.
+     *
+     * @param description Task description field.
+     * @param parts All fields from the line.
+     * @return The deadline, or {@code null} if the due date is missing or invalid.
+     */
+    private Deadline parseStoredDeadline(String description, String[] parts) {
+        if (parts.length != DEADLINE_FIELD_COUNT || parts[3].isEmpty()) {
+            return null;
+        }
+        TaskDateTime dueAt = TaskDateTime.parseStorage(parts[3]);
+        if (dueAt == null) {
+            return null;
+        }
+        return new Deadline(description, dueAt);
+    }
+
+    /**
+     * Returns an event if {@code parts} has a valid start and end.
+     *
+     * @param description Task description field.
+     * @param parts All fields from the line.
+     * @return The event, or {@code null} if the times are missing, invalid, or reversed.
+     */
+    private Event parseStoredEvent(String description, String[] parts) {
+        if (parts.length != EVENT_FIELD_COUNT || parts[3].isEmpty() || parts[4].isEmpty()) {
+            return null;
+        }
+        TaskDateTime startAt = TaskDateTime.parseStorage(parts[3]);
+        TaskDateTime endAt = TaskDateTime.parseStorage(parts[4]);
+        if (startAt == null || endAt == null) {
+            return null;
+        }
+        if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
+            return null;
+        }
+        return new Event(description, startAt, endAt);
     }
 
     /**
