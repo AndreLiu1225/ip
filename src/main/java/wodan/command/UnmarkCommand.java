@@ -33,8 +33,12 @@ public class UnmarkCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         int taskNumber = Parser.parseUnmarkNumber(arguments, tasks);
+        assert taskNumber >= 1 && taskNumber <= tasks.size()
+                : "parseUnmarkNumber must return number that exists in the list";
         Task currentTask = tasks.get(taskNumber - 1);
         currentTask.markAsUndone();
+        assert " ".equals(currentTask.getStatusIcon())
+                : "markAsUndone should leave the task undone";
         storage.save(tasks.getTasks());
         ui.show("    The ravens retract their approval.",
                 "     " + currentTask.toString());

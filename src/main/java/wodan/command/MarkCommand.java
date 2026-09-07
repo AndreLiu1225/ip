@@ -33,8 +33,12 @@ public class MarkCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
         int taskNumber = Parser.parseMarkNumber(arguments, tasks);
+        assert taskNumber >= 1 && taskNumber <= tasks.size()
+                : "parseMarkNumber must return a number that exists in the list";
         Task currentTask = tasks.get(taskNumber - 1);
         currentTask.markAsDone();
+        assert "X".equals(currentTask.getStatusIcon())
+                : "markAsDone should leave the task done";
         storage.save(tasks.getTasks());
         ui.show("    One less burden to carry.",
                 "     " + currentTask.toString(),
