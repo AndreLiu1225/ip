@@ -61,6 +61,8 @@ public enum CommandWord {
      * @return A spoken list such as {@code todo, deadline, or bye}.
      */
     private static String joinWithOr(String... words) {
+        // joinWithOr will only be called by code. An empty array would not be caused by the user.
+        assert words != null && words.length > 0 : "joinWithOr needs at least one word";
         if (words.length == 1) {
             return words[0];
         }

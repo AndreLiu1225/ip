@@ -306,7 +306,6 @@ public class Parser {
      * @param notANumberSuffix Error suffix if {@code arguments} is not an integer.
      * @param emptyListMessage Error if {@code tasks} has no items.
      * @return A 1-based task number that exists in {@code tasks}.
-     * @throws WodanException If the number is missing, not an integer, or out of range.
      */
     private static int parseTaskNumber(String arguments, TaskList tasks, String missingMessage,
             String notANumberSuffix, String emptyListMessage) throws WodanException {
@@ -323,12 +322,8 @@ public class Parser {
         if (tasks.isEmpty()) {
             throw new WodanException(emptyListMessage);
         }
-        if (taskNumber < 1 || taskNumber > tasks.size()) {
-            throw new WodanException(
-                    "There is no quest " + taskNumber + ". The ravens watch over " + tasks.size()
-                            + (tasks.size() == 1 ? " quest" : " quests")
-                            + ". Try a number from 1 to " + tasks.size() + ".");
-        }
+        assert taskNumber >= 1 && taskNumber <= tasks.size()
+                : "parseTaskNumber must return a number that exists in the list";
         return taskNumber;
     }
 }
