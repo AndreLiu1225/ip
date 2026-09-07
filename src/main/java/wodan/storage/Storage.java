@@ -5,7 +5,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import wodan.WodanException;
 import wodan.task.Deadline;
@@ -66,24 +69,21 @@ public class Storage {
             List<String> lines = new ArrayList<>(
                     Files.readAllLines(filePath, StandardCharsets.UTF_8));
             stripBom(lines);
-            int skipped = 0;
-            for (String line : lines) {
-                if (line.trim().isEmpty()) {
-                    continue;
-                }
-                Task task = parseTask(line);
-                if (task == null) {
-                    skipped++;
-                    continue;
-                }
-                tasks.add(task);
-            }
+            List<Task> parsed = lines.stream()
+                    .filter(line -> !line.trim().isEmpty())
+                    .map(this::parseTask)
+                    .collect(Collectors.toList());
+
+            ArrayList<Task> loaded = parsed.stream()
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toCollection(ArrayList::new));
+            int skipped = parsed.size() - loaded.size();
             if (skipped == 1) {
                 loadWarning = "The ravens skipped 1 corrupted quest in the save file.";
             } else if (skipped > 1) {
                 loadWarning = "The ravens skipped " + skipped + " corrupted quests in the save file.";
             }
-            return tasks;
+            return loaded;
         } catch (IOException e) {
             throw new WodanException("The ravens could not recall the quests.");
         }
@@ -104,10 +104,9 @@ public class Storage {
         try {
             createParentDirectory();
 
-            ArrayList<String> lines = new ArrayList<>();
-            for (Task task : tasks) {
-                lines.add(task.toStorageString());
-            }
+            List<String> lines = tasks.stream()
+                    .map(Task::toStorageString)
+                    .collect(Collectors.toList());
             Files.write(filePath, lines, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new WodanException("The ravens could not record the quests.");
@@ -197,12 +196,9 @@ public class Storage {
      * @return The fields in order.
      */
     private String[] splitFields(String line) {
-        String[] rawParts = line.split("\\|", -1);
-        String[] parts = new String[rawParts.length];
-        for (int i = 0; i < rawParts.length; i++) {
-            parts[i] = rawParts[i].trim();
-        }
-        return parts;
+        return Arrays.stream(line.split("\\|", -1))
+                .map(String::trim)
+                .toArray(String[]::new);
     }
 
     /**

@@ -1,5 +1,8 @@
 package wodan.parser;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 import wodan.WodanException;
 
 /**
@@ -64,13 +67,8 @@ public enum CommandWord {
         if (words.length == 1) {
             return words[0];
         }
-        StringBuilder result = new StringBuilder();
-        for (int i = 0; i < words.length - 1; i++) {
-            result.append(words[i]);
-            result.append(", ");
-        }
-        result.append("or ");
-        result.append(words[words.length - 1]);
-        return result.toString();
+        String listed = Arrays.stream(words, 0, words.length - 1)
+                .collect(Collectors.joining(", "));
+        return listed + ", or " + words[words.length - 1];
     }
 }

@@ -2,6 +2,9 @@ package wodan.task;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * The in-memory list of tasks, with operations to add, delete, and look up tasks.
@@ -92,13 +95,7 @@ public class TaskList {
      * @return 1-based numbers of matching tasks, in list order.
      */
     public ArrayList<Integer> taskNumbersOn(LocalDate date) {
-        ArrayList<Integer> numbers = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).occursOn(date)) {
-                numbers.add(i + 1);
-            }
-        }
-        return numbers;
+        return matchingTaskNumbers(task -> task.occursOn(date));
     }
 
     /**
@@ -109,12 +106,20 @@ public class TaskList {
      * @return 1-based numbers of matching tasks, in list order.
      */
     public ArrayList<Integer> taskNumbersMatching(String keyword) {
-        ArrayList<Integer> numbers = new ArrayList<>();
-        for (int i = 0; i < tasks.size(); i++) {
-            if (tasks.get(i).hasDescriptionContaining(keyword)) {
-                numbers.add(i + 1);
-            }
-        }
-        return numbers;
+        return matchingTaskNumbers(task -> task.hasDescriptionContaining(keyword));
+    }
+
+    /**
+     * Returns 1-based list numbers of tasks that satisfy {@code matches}.
+     *
+     * @param matches Test applied to each task.
+     * @return Matching numbers in list order.
+     */
+    private ArrayList<Integer> matchingTaskNumbers(Predicate<Task> matches) {
+        return IntStream.range(0, tasks.size())
+                .filter(i -> matches.test(tasks.get(i)))
+                .map(i -> i + 1)
+                .boxed()
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 }
