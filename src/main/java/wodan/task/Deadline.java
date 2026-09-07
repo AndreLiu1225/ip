@@ -58,7 +58,6 @@ public class Deadline extends Task {
      */
     @Override
     public String toStorageString() {
-        return "D | " + (isDone() ? "1" : "0") + " | " + getDescription()
-                + " | " + dueAt.toStorageString();
+        return toStoragePrefix(STORAGE_TYPE_DEADLINE) + " | " + dueAt.toStorageString();
     }
 }

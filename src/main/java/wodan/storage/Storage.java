@@ -140,10 +140,10 @@ public class Storage {
 
         String type = parts[0];
         String doneFlag = parts[1];
-        if (!doneFlag.equals("0") && !doneFlag.equals("1")) {
+        if (!doneFlag.equals(Task.STORAGE_NOT_DONE) && !doneFlag.equals(Task.STORAGE_DONE)) {
             return null;
         }
-        boolean isDone = doneFlag.equals("1");
+        boolean isDone = doneFlag.equals(Task.STORAGE_DONE);
         String description = parts[2];
         if (description.isEmpty()) {
             return null;
@@ -151,13 +151,13 @@ public class Storage {
 
         Task task;
         switch (type) {
-            case "T":
+            case Task.STORAGE_TYPE_TODO:
                 if (parts.length != 3) {
                     return null;
                 }
                 task = new Todo(description);
                 break;
-            case "D":
+            case Task.STORAGE_TYPE_DEADLINE:
                 if (parts.length != 4 || parts[3].isEmpty()) {
                     return null;
                 }
@@ -167,7 +167,7 @@ public class Storage {
                 }
                 task = new Deadline(description, dueAt);
                 break;
-            case "E":
+            case Task.STORAGE_TYPE_EVENT:
                 if (parts.length != 5 || parts[3].isEmpty() || parts[4].isEmpty()) {
                     return null;
                 }

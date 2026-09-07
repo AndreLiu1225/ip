@@ -76,7 +76,7 @@ public class Event extends Task {
      */
     @Override
     public String toStorageString() {
-        return "E | " + (isDone() ? "1" : "0") + " | " + getDescription()
+        return toStoragePrefix(STORAGE_TYPE_EVENT)
                 + " | " + startAt.toStorageString() + " | " + endAt.toStorageString();
     }
 }
