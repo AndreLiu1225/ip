@@ -7,6 +7,9 @@ import java.util.Locale;
  * A task that the user can mark as done or not done.
  */
 public abstract class Task {
+    private static final String STATUS_DONE_ICON = "X";
+    private static final String STATUS_NOT_DONE_ICON = " ";
+
     /** What the user asked to do. */
     private String description;
     /** Whether this task has been marked done. */
@@ -42,7 +45,7 @@ public abstract class Task {
      * @return {@code X} if done, or a space if not done.
      */
     public String getStatusIcon() {
-        return isDone ? "X" : " ";
+        return isDone ? STATUS_DONE_ICON : STATUS_NOT_DONE_ICON;
     }
 
     /**
