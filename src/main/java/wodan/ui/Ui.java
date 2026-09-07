@@ -16,6 +16,10 @@ public class Ui {
             + "   \\ \\/  \\/ / _ \\ / _` |/ _` | '_ \\\n"
             + "    \\  /\\  / (_) | (_| | (_| | | | |\n"
             + "     \\/  \\/ \\___/ \\__,_|\\__,_|_| |_|\n";
+    /** First line of the greeting, without console indent. */
+    public static final String GREETING_HAIL = "Hail, wanderer. Wodan is listening.";
+    /** Second line of the greeting, without console indent. */
+    public static final String GREETING_PROMPT = "What is your command?";
 
     private final Scanner scanner;
     private final PrintStream out;
@@ -44,10 +48,19 @@ public class Ui {
     public void showWelcome() {
         out.println(BANNER);
         show(LINE,
-                "     Hail, wanderer. Wodan is listening.",
-                "     What is your command?",
+                "     " + GREETING_HAIL,
+                "     " + GREETING_PROMPT,
                 LINE,
                 "");
+    }
+
+    /**
+     * Returns the two-line greeting used by the graphical UI.
+     *
+     * @return Hail line, newline, then the prompt.
+     */
+    public static String getGreetingText() {
+        return GREETING_HAIL + "\n" + GREETING_PROMPT;
     }
 
     /**

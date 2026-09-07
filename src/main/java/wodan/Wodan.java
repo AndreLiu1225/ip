@@ -90,7 +90,7 @@ public class Wodan {
      * @return Welcome text, plus a load warning if the save file could not be read cleanly.
      */
     public String getGreeting() {
-        String greeting = "Hail, wanderer. Wodan is listening.\nWhat is your command?";
+        String greeting = Ui.getGreetingText();
         if (startMessage == null) {
             return greeting;
         }
