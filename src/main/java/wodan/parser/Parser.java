@@ -22,6 +22,13 @@ import wodan.task.Todo;
  * Interprets a user command line: the command word, its arguments, and task details.
  */
 public class Parser {
+    private static final String BY_MARKER = "/by";
+    private static final String FROM_MARKER = "/from";
+    private static final String TO_MARKER = "/to";
+    private static final String BY_SPLIT_PATTERN = "\\s+" + BY_MARKER + "(?:\\s+|$)";
+    private static final String FROM_SPLIT_PATTERN = "\\s+" + FROM_MARKER + "(?:\\s+|$)";
+    private static final String TO_SPLIT_PATTERN = "\\s+" + TO_MARKER + "(?:\\s+|$)";
+
     /**
      * Prevents instantiation; command parsing is done through static methods.
      */
@@ -107,24 +114,28 @@ public class Parser {
      * @throws WodanException If the description, {@code /by} time, or date is invalid.
      */
     private static Deadline parseDeadline(String arguments) throws WodanException {
-        String[] deadlineParts = arguments.split("\\s+/by(?:\\s+|$)", 2);
+        String[] deadlineParts = arguments.split(BY_SPLIT_PATTERN, 2);
         String description = deadlineParts[0].trim();
         String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
-        if (description.startsWith("/by")) {
+        if (description.startsWith(BY_MARKER)) {
             throw new WodanException(
-                    "A deadline needs a quest name before /by. Try: deadline return book /by 2019-12-02");
+                    "A deadline needs a quest name before " + BY_MARKER
+                            + ". Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         if (description.isEmpty()) {
             throw new WodanException(
-                    "A deadline needs a quest name and /by <when>. Try: deadline return book /by 2019-12-02");
+                    "A deadline needs a quest name and " + BY_MARKER
+                            + " <when>. Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         if (deadlineParts.length < 2) {
             throw new WodanException(
-                    "A deadline must include /by <when>. Try: deadline return book /by 2019-12-02");
+                    "A deadline must include " + BY_MARKER
+                            + " <when>. Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         if (by.isEmpty()) {
             throw new WodanException(
-                    "The ravens need a time after /by. Try: deadline return book /by 2019-12-02");
+                    "The ravens need a time after " + BY_MARKER
+                            + ". Try: deadline return book " + BY_MARKER + " 2019-12-02");
         }
         rejectFileDelimiter(description);
         rejectFileDelimiter(by);
@@ -140,52 +151,59 @@ public class Parser {
      * @throws WodanException If the description, times, or date range is invalid.
      */
     private static Event parseEvent(String arguments) throws WodanException {
-        String[] fromParts = arguments.split("\\s+/from(?:\\s+|$)", 2);
+        String[] fromParts = arguments.split(FROM_SPLIT_PATTERN, 2);
         String description = fromParts[0].trim();
-        if (description.startsWith("/from")) {
+        if (description.startsWith(FROM_MARKER)) {
             throw new WodanException(
-                    "An event needs a quest name before /from. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
+                    "An event needs a quest name before " + FROM_MARKER + ". "
+                            + "Try: event meeting " + FROM_MARKER
+                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
         }
         if (description.isEmpty()) {
             throw new WodanException(
-                    "An event needs a name, /from <start>, and /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
+                    "An event needs a name, " + FROM_MARKER + " <start>, and " + TO_MARKER + " <end>. "
+                            + "Try: event meeting " + FROM_MARKER
+                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
         }
         if (fromParts.length < 2) {
             throw new WodanException(
-                    "An event must include /from <start> and /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
+                    "An event must include " + FROM_MARKER + " <start> and " + TO_MARKER + " <end>. "
+                            + "Try: event meeting " + FROM_MARKER
+                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
         }
 
         String rest = fromParts[1].trim();
         String from;
         String to;
         boolean hasTo;
-        if (rest.equals("/to") || rest.startsWith("/to ") || rest.startsWith("/to\t")) {
+        if (rest.equals(TO_MARKER) || rest.startsWith(TO_MARKER + " ")
+                || rest.startsWith(TO_MARKER + "\t")) {
             from = "";
             hasTo = true;
-            to = rest.substring("/to".length()).trim();
+            to = rest.substring(TO_MARKER.length()).trim();
         } else {
-            String[] toParts = rest.split("\\s+/to(?:\\s+|$)", 2);
+            String[] toParts = rest.split(TO_SPLIT_PATTERN, 2);
             from = toParts[0].trim();
             hasTo = toParts.length >= 2;
             to = hasTo ? toParts[1].trim() : "";
         }
         if (from.isEmpty()) {
             throw new WodanException(
-                    "The ravens need a start time after /from. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
+                    "The ravens need a start time after " + FROM_MARKER + ". "
+                            + "Try: event meeting " + FROM_MARKER
+                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
         }
         if (!hasTo) {
             throw new WodanException(
-                    "An event must include /to <end>. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
+                    "An event must include " + TO_MARKER + " <end>. "
+                            + "Try: event meeting " + FROM_MARKER
+                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
         }
         if (to.isEmpty()) {
             throw new WodanException(
-                    "The ravens need an end time after /to. "
-                            + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600");
+                    "The ravens need an end time after " + TO_MARKER + ". "
+                            + "Try: event meeting " + FROM_MARKER
+                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
         }
         rejectFileDelimiter(description);
         rejectFileDelimiter(from);
