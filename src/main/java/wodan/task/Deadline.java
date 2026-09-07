@@ -7,7 +7,7 @@ import java.time.LocalDate;
  */
 public class Deadline extends Task {
     /** When this task is due. */
-    protected TaskDateTime dueAt;
+    private TaskDateTime dueAt;
 
     /**
      * Creates a deadline with the given due date or date-time.
@@ -18,38 +18,6 @@ public class Deadline extends Task {
     public Deadline(String description, TaskDateTime dueAt) {
         super(description);
         this.dueAt = dueAt;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markAsDone() {
-        super.isDone = true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markAsUndone() {
-        super.isDone = false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getStatusIcon() {
-        return super.isDone ? "X" : " ";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDescription() {
-        return super.description;
     }
 
     /**
@@ -90,7 +58,6 @@ public class Deadline extends Task {
      */
     @Override
     public String toStorageString() {
-        return "D | " + (super.isDone ? "1" : "0") + " | " + super.description
-                + " | " + dueAt.toStorageString();
+        return toStoragePrefix(STORAGE_TYPE_DEADLINE) + " | " + dueAt.toStorageString();
     }
 }

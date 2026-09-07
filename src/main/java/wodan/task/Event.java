@@ -7,9 +7,9 @@ import java.time.LocalDate;
  */
 public class Event extends Task {
     /** When this event starts. */
-    protected TaskDateTime startAt;
+    private TaskDateTime startAt;
     /** When this event ends. */
-    protected TaskDateTime endAt;
+    private TaskDateTime endAt;
 
     /**
      * Creates an event with the given start and end date-times.
@@ -25,38 +25,6 @@ public class Event extends Task {
                 : "Event end cannot be before start";
         this.startAt = startAt;
         this.endAt = endAt;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markAsDone() {
-        super.isDone = true;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void markAsUndone() {
-        super.isDone = false;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getStatusIcon() {
-        return super.isDone ? "X" : " ";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDescription() {
-        return super.description;
     }
 
     /**
@@ -99,7 +67,9 @@ public class Event extends Task {
     public boolean occursOn(LocalDate date) {
         LocalDate startDate = startAt.toLocalDate();
         LocalDate endDate = endAt.toLocalDate();
-        return !date.isBefore(startDate) && !date.isAfter(endDate);
+        boolean isOnOrAfterStart = !date.isBefore(startDate);
+        boolean isOnOrBeforeEnd = !date.isAfter(endDate);
+        return isOnOrAfterStart && isOnOrBeforeEnd;
     }
 
     /**
@@ -109,7 +79,7 @@ public class Event extends Task {
      */
     @Override
     public String toStorageString() {
-        return "E | " + (super.isDone ? "1" : "0") + " | " + super.description
+        return toStoragePrefix(STORAGE_TYPE_EVENT)
                 + " | " + startAt.toStorageString() + " | " + endAt.toStorageString();
     }
 }
