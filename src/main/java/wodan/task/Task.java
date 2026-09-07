@@ -8,9 +8,9 @@ import java.util.Locale;
  */
 public abstract class Task {
     /** What the user asked to do. */
-    protected String description;
+    private String description;
     /** Whether this task has been marked done. */
-    protected boolean isDone;
+    private boolean isDone;
 
     /**
      * Creates a task that is not done yet.
@@ -52,6 +52,15 @@ public abstract class Task {
      */
     public String getDescription() {
         return description;
+    }
+
+    /**
+     * Returns whether this task has been marked done.
+     *
+     * @return {@code true} if done.
+     */
+    public boolean isDone() {
+        return isDone;
     }
 
     /**

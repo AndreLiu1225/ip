@@ -7,9 +7,9 @@ import java.time.LocalDate;
  */
 public class Event extends Task {
     /** When this event starts. */
-    protected TaskDateTime startAt;
+    private TaskDateTime startAt;
     /** When this event ends. */
-    protected TaskDateTime endAt;
+    private TaskDateTime endAt;
 
     /**
      * Creates an event with the given start and end date-times.
@@ -74,7 +74,7 @@ public class Event extends Task {
      */
     @Override
     public String toStorageString() {
-        return "E | " + (super.isDone ? "1" : "0") + " | " + super.description
+        return "E | " + (isDone() ? "1" : "0") + " | " + getDescription()
                 + " | " + startAt.toStorageString() + " | " + endAt.toStorageString();
     }
 }

@@ -31,6 +31,6 @@ public class Todo extends Task {
      */
     @Override
     public String toStorageString() {
-        return "T | " + (super.isDone ? "1" : "0") + " | " + super.description;
+        return "T | " + (isDone() ? "1" : "0") + " | " + getDescription();
     }
 }
