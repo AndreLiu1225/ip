@@ -36,8 +36,9 @@ public class Parser {
      * @throws WodanException If the line is empty, unknown, or has invalid arguments.
      */
     public static Command parse(String fullCommand) throws WodanException {
-        CommandWord commandWord = parseCommandWord(fullCommand);
-        String arguments = parseArguments(fullCommand);
+        String[] words = splitCommandLine(fullCommand);
+        CommandWord commandWord = CommandWord.parse(words[0]);
+        String arguments = words.length > 1 ? words[1] : "";
         switch (commandWord) {
             case TODO:
                 return new AddCommand(parseTodo(arguments));
@@ -65,31 +66,20 @@ public class Parser {
     }
 
     /**
-     * Returns the command word matching the first word of {@code fullCommand}.
+     * Splits {@code fullCommand} into the command word and the remaining argument text.
      *
      * @param fullCommand One line typed by the user.
-     * @return The recognized command word.
-     * @throws WodanException If the line is empty or the command word is unknown.
+     * @return The first word, then the rest of the line if any.
+     * @throws WodanException If the line is empty.
      */
-    private static CommandWord parseCommandWord(String fullCommand) throws WodanException {
-        if (fullCommand.trim().isEmpty()) {
+    private static String[] splitCommandLine(String fullCommand) throws WodanException {
+        String trimmed = fullCommand.trim();
+        if (trimmed.isEmpty()) {
             throw new WodanException(
                     "Silence is not a command. Speak todo, deadline, event, list, mark, "
                             + "unmark, delete, on, find, or bye.");
         }
-        String[] words = fullCommand.trim().split(" ", 2);
-        return CommandWord.parse(words[0]);
-    }
-
-    /**
-     * Returns the text after the command word, or an empty string if there is none.
-     *
-     * @param fullCommand One line typed by the user.
-     * @return The argument text, which may be empty.
-     */
-    private static String parseArguments(String fullCommand) {
-        String[] words = fullCommand.trim().split(" ", 2);
-        return words.length > 1 ? words[1] : "";
+        return trimmed.split(" ", 2);
     }
 
     /**
