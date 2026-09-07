@@ -28,6 +28,8 @@ public class Parser {
     private static final String BY_SPLIT_PATTERN = "\\s+" + BY_MARKER + "(?:\\s+|$)";
     private static final String FROM_SPLIT_PATTERN = "\\s+" + FROM_MARKER + "(?:\\s+|$)";
     private static final String TO_SPLIT_PATTERN = "\\s+" + TO_MARKER + "(?:\\s+|$)";
+    private static final String EVENT_USAGE = "Try: event meeting " + FROM_MARKER
+            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600";
 
     /**
      * Prevents instantiation; command parsing is done through static methods.
@@ -153,67 +155,94 @@ public class Parser {
     private static Event parseEvent(String arguments) throws WodanException {
         String[] fromParts = arguments.split(FROM_SPLIT_PATTERN, 2);
         String description = fromParts[0].trim();
-        if (description.startsWith(FROM_MARKER)) {
-            throw new WodanException(
-                    "An event needs a quest name before " + FROM_MARKER + ". "
-                            + "Try: event meeting " + FROM_MARKER
-                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
-        }
-        if (description.isEmpty()) {
-            throw new WodanException(
-                    "An event needs a name, " + FROM_MARKER + " <start>, and " + TO_MARKER + " <end>. "
-                            + "Try: event meeting " + FROM_MARKER
-                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
-        }
-        if (fromParts.length < 2) {
-            throw new WodanException(
-                    "An event must include " + FROM_MARKER + " <start> and " + TO_MARKER + " <end>. "
-                            + "Try: event meeting " + FROM_MARKER
-                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
-        }
+        rejectInvalidEventDescription(description, fromParts.length);
 
-        String rest = fromParts[1].trim();
-        String from;
-        String to;
-        boolean hasTo;
-        if (rest.equals(TO_MARKER) || rest.startsWith(TO_MARKER + " ")
-                || rest.startsWith(TO_MARKER + "\t")) {
-            from = "";
-            hasTo = true;
-            to = rest.substring(TO_MARKER.length()).trim();
-        } else {
-            String[] toParts = rest.split(TO_SPLIT_PATTERN, 2);
-            from = toParts[0].trim();
-            hasTo = toParts.length >= 2;
-            to = hasTo ? toParts[1].trim() : "";
-        }
-        if (from.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need a start time after " + FROM_MARKER + ". "
-                            + "Try: event meeting " + FROM_MARKER
-                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
-        }
-        if (!hasTo) {
-            throw new WodanException(
-                    "An event must include " + TO_MARKER + " <end>. "
-                            + "Try: event meeting " + FROM_MARKER
-                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
-        }
-        if (to.isEmpty()) {
-            throw new WodanException(
-                    "The ravens need an end time after " + TO_MARKER + ". "
-                            + "Try: event meeting " + FROM_MARKER
-                            + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600");
-        }
+        EventTimeRange times = splitEventTimes(fromParts[1].trim());
+        rejectInvalidEventTimes(times);
+
         rejectFileDelimiter(description);
-        rejectFileDelimiter(from);
-        rejectFileDelimiter(to);
-        TaskDateTime startAt = TaskDateTime.parse(from);
-        TaskDateTime endAt = TaskDateTime.parse(to);
+        rejectFileDelimiter(times.from);
+        rejectFileDelimiter(times.to);
+        TaskDateTime startAt = TaskDateTime.parse(times.from);
+        TaskDateTime endAt = TaskDateTime.parse(times.to);
         if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
             throw new WodanException("An event cannot end before it starts.");
         }
         return new Event(description, startAt, endAt);
+    }
+
+    /**
+     * Rejects an event with a missing name or a missing {@code /from} marker.
+     *
+     * @param description Text before {@code /from}.
+     * @param fromPartCount Number of pieces after splitting on {@code /from}.
+     * @throws WodanException If the description or {@code /from} is missing.
+     */
+    private static void rejectInvalidEventDescription(String description, int fromPartCount)
+            throws WodanException {
+        if (description.startsWith(FROM_MARKER)) {
+            throw new WodanException(
+                    "An event needs a quest name before " + FROM_MARKER + ". " + EVENT_USAGE);
+        }
+        if (description.isEmpty()) {
+            throw new WodanException(
+                    "An event needs a name, " + FROM_MARKER + " <start>, and " + TO_MARKER + " <end>. "
+                            + EVENT_USAGE);
+        }
+        if (fromPartCount < 2) {
+            throw new WodanException(
+                    "An event must include " + FROM_MARKER + " <start> and " + TO_MARKER + " <end>. "
+                            + EVENT_USAGE);
+        }
+    }
+
+    /**
+     * Splits the text after {@code /from} into start and end values.
+     *
+     * @param rest Text after the {@code /from} marker.
+     * @return The start text, end text, and whether {@code /to} was present.
+     */
+    private static EventTimeRange splitEventTimes(String rest) {
+        if (isToMarkerWithoutFrom(rest)) {
+            return new EventTimeRange("", rest.substring(TO_MARKER.length()).trim(), true);
+        }
+        String[] toParts = rest.split(TO_SPLIT_PATTERN, 2);
+        boolean hasToMarker = toParts.length >= 2;
+        String to = hasToMarker ? toParts[1].trim() : "";
+        return new EventTimeRange(toParts[0].trim(), to, hasToMarker);
+    }
+
+    /**
+     * Returns {@code true} if {@code rest} is a {@code /to} marker with no start time before it.
+     *
+     * @param rest Text after {@code /from}.
+     * @return Whether the start time is missing because {@code /to} comes next.
+     */
+    private static boolean isToMarkerWithoutFrom(String rest) {
+        return rest.equals(TO_MARKER)
+                || rest.startsWith(TO_MARKER + " ")
+                || rest.startsWith(TO_MARKER + "\t");
+    }
+
+    /**
+     * Rejects an event with a missing start, a missing {@code /to}, or a missing end.
+     *
+     * @param times Split start and end text.
+     * @throws WodanException If a required time part is missing.
+     */
+    private static void rejectInvalidEventTimes(EventTimeRange times) throws WodanException {
+        if (times.from.isEmpty()) {
+            throw new WodanException(
+                    "The ravens need a start time after " + FROM_MARKER + ". " + EVENT_USAGE);
+        }
+        if (!times.hasToMarker) {
+            throw new WodanException(
+                    "An event must include " + TO_MARKER + " <end>. " + EVENT_USAGE);
+        }
+        if (times.to.isEmpty()) {
+            throw new WodanException(
+                    "The ravens need an end time after " + TO_MARKER + ". " + EVENT_USAGE);
+        }
     }
 
     /**
@@ -338,5 +367,20 @@ public class Parser {
                             + ". Try a number from 1 to " + tasks.size() + ".");
         }
         return taskNumber;
+    }
+
+    /**
+     * Start and end text taken from an event command after {@code /from}.
+     */
+    private static class EventTimeRange {
+        private final String from;
+        private final String to;
+        private final boolean hasToMarker;
+
+        private EventTimeRange(String from, String to, boolean hasToMarker) {
+            this.from = from;
+            this.to = to;
+            this.hasToMarker = hasToMarker;
+        }
     }
 }
