@@ -347,15 +347,16 @@ public class Parser {
      */
     private static int parseTaskNumber(String arguments, TaskList tasks, String missingMessage,
             String notANumberSuffix, String emptyListMessage) throws WodanException {
-        if (arguments.trim().isEmpty()) {
+        String trimmed = arguments.trim();
+        if (trimmed.isEmpty()) {
             throw new WodanException(missingMessage);
         }
         int taskNumber;
         try {
-            taskNumber = Integer.parseInt(arguments.trim());
+            taskNumber = Integer.parseInt(trimmed);
         } catch (NumberFormatException e) {
             throw new WodanException(
-                    "'" + arguments.trim() + notANumberSuffix);
+                    "'" + trimmed + notANumberSuffix);
         }
         if (tasks.isEmpty()) {
             throw new WodanException(emptyListMessage);
