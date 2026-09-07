@@ -17,6 +17,8 @@ import wodan.ui.Ui;
  */
 public class Wodan {
     private static final String DEFAULT_SAVE_PATH = Path.of("data", "wodan.txt").toString();
+    private static final int MIN_CONSOLE_INDENT = 4;
+    private static final int MAX_CONSOLE_INDENT = 8;
 
     private final Storage storage;
     private final TaskList tasks;
@@ -146,7 +148,8 @@ public class Wodan {
         String[] lines = text.split("\\R", -1);
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < lines.length; i++) {
-            result.append(lines[i].replaceFirst("^[ ]{4,8}", ""));
+            result.append(lines[i].replaceFirst(
+                    "^[ ]{" + MIN_CONSOLE_INDENT + "," + MAX_CONSOLE_INDENT + "}", ""));
             if (i < lines.length - 1) {
                 result.append('\n');
             }
