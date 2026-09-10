@@ -11,6 +11,7 @@ import wodan.command.FindCommand;
 import wodan.command.ListCommand;
 import wodan.command.MarkCommand;
 import wodan.command.OnCommand;
+import wodan.command.TagCommand;
 import wodan.command.UnmarkCommand;
 import wodan.task.Deadline;
 import wodan.task.Event;
@@ -67,6 +68,8 @@ public class Parser {
                 return new OnCommand(arguments);
             case FIND:
                 return new FindCommand(arguments);
+            case TAG:
+                return new TagCommand(arguments);
             case BYE:
                 return new ExitCommand();
             default:
@@ -86,7 +89,7 @@ public class Parser {
         if (trimmed.isEmpty()) {
             throw new WodanException(
                     "Silence is not a command. Speak todo, deadline, event, list, mark, "
-                            + "unmark, delete, on, find, or bye.");
+                            + "unmark, delete, on, find, tag, or bye.");
         }
         return trimmed.split(" ", 2);
     }
@@ -322,6 +325,40 @@ public class Parser {
     }
 
     /**
+     * Returns the 1-based list number for a {@code tag} command.
+     *
+     * @param arguments Text after the {@code tag} command word.
+     * @param tasks Current task list, used to check that the number is in range.
+     * @return A 1-based task number that exists in {@code tasks}.
+     * @throws WodanException If the number is missing, not an integer, or out of range.
+     */
+    public static int parseTagNumber(String arguments, TaskList tasks) throws WodanException {
+        String[] parts = arguments.trim().split("\\s+", 2);
+        return parseTaskNumber(parts[0], tasks,
+                "Which quest should the ravens brand? Try: tag 1 school",
+                "' is not a quest number. Try: tag 1 school",
+                "There are no quests to tag yet. Add one with todo, deadline, or event.");
+    }
+
+    /**
+     * Returns the category name for a {@code tag} command.
+     *
+     * @param arguments Text after the {@code tag} command word.
+     * @return The trimmed category name.
+     * @throws WodanException If the name is missing or contains {@code |}.
+     */
+    public static String parseTagCategory(String arguments) throws WodanException {
+        String[] parts = arguments.trim().split("\\s+", 2);
+        if (parts.length < 2 || parts[1].trim().isEmpty()) {
+            throw new WodanException(
+                    "Name the brand. Try: tag 1 school");
+        }
+        String category = parts[1].trim();
+        rejectFileDelimiter(category);
+        return category;
+    }
+
+    /**
      * Rejects values that contain {@code |}, which is reserved as the save-file delimiter.
      *
      * @param value User-provided task text to check.
@@ -359,6 +396,12 @@ public class Parser {
         }
         if (tasks.isEmpty()) {
             throw new WodanException(emptyListMessage);
+        }
+        if (taskNumber < 1 || taskNumber > tasks.size()) {
+            throw new WodanException(
+                    "There is no quest " + taskNumber + ". The ravens watch over " + tasks.size()
+                            + (tasks.size() == 1 ? " quest" : " quests")
+                            + ". Try a number from 1 to " + tasks.size() + ".");
         }
         assert taskNumber >= 1 && taskNumber <= tasks.size()
                 : "parseTaskNumber must return a number that exists in the list";

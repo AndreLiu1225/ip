@@ -2,6 +2,7 @@ package wodan.task; // same package as the class being tested
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
@@ -91,14 +92,27 @@ public class TodoTest {
     @Test
     public void toStorageString_unmarkedTodo_zeroFlag() {
         Todo todo = new Todo("borrow book");
-        assertEquals("T | 0 | borrow book", todo.toStorageString());
+        assertEquals("T | 0 | borrow book | general", todo.toStorageString());
     }
 
     @Test
     public void toStorageString_markedTodo_oneFlag() {
         Todo todo = new Todo("borrow book");
         todo.markAsDone();
-        assertEquals("T | 1 | borrow book", todo.toStorageString());
+        assertEquals("T | 1 | borrow book | general", todo.toStorageString());
+    }
+
+    @Test
+    public void setCategory_schoolWithMixedCase_storedLowercase() {
+        Todo todo = new Todo("borrow book");
+        assertEquals(Task.DEFAULT_CATEGORY, todo.getCategory());
+        assertTrue(todo.isGeneral());
+        todo.setCategory("School");
+        assertEquals("school", todo.getCategory());
+        assertFalse(todo.isGeneral());
+        todo.setCategory("   ");
+        assertEquals(Task.DEFAULT_CATEGORY, todo.getCategory());
+        assertEquals("T | 0 | borrow book | general", todo.toStorageString());
     }
 
     @Test

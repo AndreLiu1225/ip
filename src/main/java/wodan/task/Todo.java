@@ -25,12 +25,12 @@ public class Todo extends Task {
     }
 
     /**
-     * Returns this todo as {@code T | 0|1 | description}.
+     * Returns this todo as {@code T | 0|1 | description | category}.
      *
      * @return One save-file line.
      */
     @Override
     public String toStorageString() {
-        return toStoragePrefix(STORAGE_TYPE_TODO);
+        return toStoragePrefix(STORAGE_TYPE_TODO) + " | " + getCategory();
     }
 }

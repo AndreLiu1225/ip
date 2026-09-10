@@ -80,6 +80,32 @@ public class TaskListTest {
     }
 
     @Test
+    public void categoryNames_mixedTags_generalFirstThenSorted() {
+        TaskList tasks = new TaskList();
+        Todo work = new Todo("work item");
+        work.setCategory("work");
+        Todo school = new Todo("school item");
+        school.setCategory("school");
+        tasks.add(work, new Todo("untagged"), school);
+        ArrayList<String> names = tasks.categoryNames();
+        assertEquals(3, names.size());
+        assertEquals(Task.DEFAULT_CATEGORY, names.get(0));
+        assertEquals("school", names.get(1));
+        assertEquals("work", names.get(2));
+    }
+
+    @Test
+    public void categoryNames_onlyTagged_omitsGeneral() {
+        TaskList tasks = new TaskList();
+        Todo school = new Todo("school item");
+        school.setCategory("school");
+        tasks.add(school);
+        ArrayList<String> names = tasks.categoryNames();
+        assertEquals(1, names.size());
+        assertEquals("school", names.get(0));
+    }
+
+    @Test
     public void taskNumbersMatching_noMatches_emptyList() {
         TaskList tasks = new TaskList();
         tasks.add(new Todo("read song"));

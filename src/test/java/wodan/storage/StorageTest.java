@@ -1,6 +1,7 @@
 package wodan.storage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import wodan.WodanException;
 import wodan.task.Deadline;
+import wodan.task.Event;
 import wodan.task.Task;
 import wodan.task.TaskDateTime;
 import wodan.task.Todo;
@@ -50,6 +52,52 @@ public class StorageTest {
         assertEquals(2, loaded.size());
         assertEquals("[T][X] borrow book", loaded.get(0).toString());
         assertEquals("[D][ ] return book (by: Oct 15 2019)", loaded.get(1).toString());
+        assertEquals("general", loaded.get(0).getCategory());
+        assertEquals("general", loaded.get(1).getCategory());
+        assertNull(storage.getLoadWarning());
+    }
+
+    @Test
+    public void load_oldTodoWithoutTag_defaultsToGeneral() throws Exception {
+        Path file = tempDir.resolve("wodan.txt");
+        Files.writeString(file, "T | 0 | borrow book\n", StandardCharsets.UTF_8);
+        Storage storage = new Storage(file.toString());
+        ArrayList<Task> loaded = storage.load();
+        assertEquals(1, loaded.size());
+        assertEquals("general", loaded.get(0).getCategory());
+        assertTrue(loaded.get(0).isGeneral());
+        assertNull(storage.getLoadWarning());
+    }
+
+    @Test
+    public void load_todoWithTag_keepsCategory() throws Exception {
+        Path file = tempDir.resolve("wodan.txt");
+        Files.writeString(file, "T | 0 | borrow book | school\n", StandardCharsets.UTF_8);
+        Storage storage = new Storage(file.toString());
+        ArrayList<Task> loaded = storage.load();
+        assertEquals(1, loaded.size());
+        assertEquals("school", loaded.get(0).getCategory());
+        assertNull(storage.getLoadWarning());
+    }
+
+    @Test
+    public void load_deadlineAndEventWithOptionalTag_oldAndNewFormats() throws Exception {
+        Path file = tempDir.resolve("wodan.txt");
+        Files.writeString(file,
+                "D | 0 | return book | 2019-10-15\n"
+                        + "D | 0 | homework | 2019-10-15 | school\n"
+                        + "E | 0 | meeting | 2019-12-02T14:00 | 2019-12-02T16:00\n"
+                        + "E | 0 | camp | 2019-12-02T14:00 | 2019-12-02T16:00 | work\n",
+                StandardCharsets.UTF_8);
+        Storage storage = new Storage(file.toString());
+        ArrayList<Task> loaded = storage.load();
+        assertEquals(4, loaded.size());
+        assertEquals("general", loaded.get(0).getCategory());
+        assertEquals("school", loaded.get(1).getCategory());
+        assertEquals("general", loaded.get(2).getCategory());
+        assertEquals("work", loaded.get(3).getCategory());
+        assertInstanceOf(Deadline.class, loaded.get(0));
+        assertInstanceOf(Event.class, loaded.get(2));
         assertNull(storage.getLoadWarning());
     }
 

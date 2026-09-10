@@ -27,6 +27,8 @@ public enum CommandWord {
     ON,
     /** Find tasks by a keyword in the description. */
     FIND,
+    /** Set a task's category. */
+    TAG,
     /** Stop the chatbot. */
     BYE;
 
@@ -53,7 +55,7 @@ public enum CommandWord {
     public static String unknownCommandMessage() {
         return "That rune is unknown. Speak "
                 + joinWithOr("todo", "deadline", "event", "list", "mark",
-                        "unmark", "delete", "on", "find", "bye")
+                        "unmark", "delete", "on", "find", "tag", "bye")
                 + ".";
     }
 

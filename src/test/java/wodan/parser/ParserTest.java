@@ -18,6 +18,7 @@ import wodan.command.ExitCommand;
 import wodan.command.FindCommand;
 import wodan.command.ListCommand;
 import wodan.command.OnCommand;
+import wodan.command.TagCommand;
 import wodan.storage.Storage;
 import wodan.task.Deadline;
 import wodan.task.Event;
@@ -68,6 +69,7 @@ public class ParserTest {
         assertInstanceOf(DeleteCommand.class, Parser.parse("delete 1"));
         assertInstanceOf(OnCommand.class, Parser.parse("on 2019-12-02"));
         assertInstanceOf(FindCommand.class, Parser.parse("find book"));
+        assertInstanceOf(TagCommand.class, Parser.parse("tag 1 school"));
     }
 
     @Test
@@ -75,7 +77,7 @@ public class ParserTest {
         WodanException ex = assertThrows(WodanException.class, () -> Parser.parse("   "));
         assertEquals(
                 "Silence is not a command. Speak todo, deadline, event, list, mark, "
-                        + "unmark, delete, on, find, or bye.",
+                        + "unmark, delete, on, find, tag, or bye.",
                 ex.getMessage());
     }
 
@@ -201,6 +203,45 @@ public class ParserTest {
     public void parseFindKeyword_trimmedText_returnsKeyword() throws WodanException {
         assertEquals("book", Parser.parseFindKeyword("  book  "));
         assertEquals("return book", Parser.parseFindKeyword("return book"));
+    }
+
+    @Test
+    public void parseTagNumber_validIndex_returnsNumber() throws WodanException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        tasks.add(new Todo("b"));
+        assertEquals(2, Parser.parseTagNumber("2 school", tasks));
+    }
+
+    @Test
+    public void parseTagNumber_emptyList_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseTagNumber(
+                "1 school", tasks));
+        assertEquals(
+                "There are no quests to tag yet. Add one with todo, deadline, or event.",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parseTagCategory_trimmedName_returnsCategory() throws WodanException {
+        assertEquals("school", Parser.parseTagCategory("1 school"));
+        assertEquals("group project", Parser.parseTagCategory("2  group project  "));
+    }
+
+    @Test
+    public void parseTagCategory_missingName_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseTagCategory("1"));
+        assertEquals("Name the brand. Try: tag 1 school", ex.getMessage());
+    }
+
+    @Test
+    public void parseTagCategory_pipeInName_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseTagCategory(
+                "1 a | b"));
+        assertEquals(
+                "A quest cannot contain '|'. The ravens use that mark in the save file.",
+                ex.getMessage());
     }
 
     @Test

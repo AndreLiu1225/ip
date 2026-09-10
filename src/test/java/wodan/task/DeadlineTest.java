@@ -26,6 +26,6 @@ public class DeadlineTest {
     public void toStringAndStorage_unmarkedDeadline_includesByDate() throws WodanException {
         Deadline deadline = new Deadline("return book", TaskDateTime.parse("2019-10-15"));
         assertEquals("[D][ ] return book (by: Oct 15 2019)", deadline.toString());
-        assertEquals("D | 0 | return book | 2019-10-15", deadline.toStorageString());
+        assertEquals("D | 0 | return book | 2019-10-15 | general", deadline.toStorageString());
     }
 }

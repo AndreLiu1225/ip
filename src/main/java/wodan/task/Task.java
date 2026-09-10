@@ -17,6 +17,8 @@ public abstract class Task {
     public static final String STORAGE_DONE = "1";
     /** Save-file flag for a task that is not done. */
     public static final String STORAGE_NOT_DONE = "0";
+    /** Default category when a task has not been tagged. */
+    public static final String DEFAULT_CATEGORY = "general";
 
     private static final String STATUS_DONE_ICON = "X";
     private static final String STATUS_NOT_DONE_ICON = " ";
@@ -25,6 +27,8 @@ public abstract class Task {
     private String description;
     /** Whether this task has been marked done. */
     private boolean isDone;
+    /** What the user tagged the task as. */
+    private String category = DEFAULT_CATEGORY;
 
     /**
      * Creates a task that is not done yet.
@@ -90,6 +94,36 @@ public abstract class Task {
     }
 
     /**
+     * Returns the category this task is grouped under.
+     *
+     * @return The category name, {@code general} if the task is untagged.
+     */
+    public String getCategory() {
+        return category;
+    }
+
+    /**
+     * Sets the category, using {@code general} if {@code category} is blank.
+     * The name is trimmed and stored in lowercase so {@code School} and {@code school} match.
+     *
+     * @param category Category name from the user or the save file.
+     */
+    public void setCategory(String category) {
+        assert category != null : "Category should not be null";
+        String trimmed = category.trim().toLowerCase(Locale.ROOT);
+        this.category = trimmed.isEmpty() ? DEFAULT_CATEGORY : trimmed;
+    }
+
+    /**
+     * Returns {@code true} if this task is in the default {@code general} category.
+     *
+     * @return Whether the category is {@code general}.
+     */
+    public boolean isGeneral() {
+        return DEFAULT_CATEGORY.equals(category);
+    }
+
+    /**
      * Returns this task as the user sees it in list replies.
      *
      * @return Display text including type, status, and details.
@@ -126,3 +160,4 @@ public abstract class Task {
                 .contains(keyword.toLowerCase(Locale.ROOT));
     }
 }
+

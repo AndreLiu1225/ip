@@ -52,12 +52,13 @@ public class Deadline extends Task {
     }
 
     /**
-     * Returns this deadline as {@code D | 0|1 | description | when}.
+     * Returns this deadline as {@code D | 0|1 | description | when | category}.
      *
      * @return One save-file line.
      */
     @Override
     public String toStorageString() {
-        return toStoragePrefix(STORAGE_TYPE_DEADLINE) + " | " + dueAt.toStorageString();
+        return toStoragePrefix(STORAGE_TYPE_DEADLINE) + " | " + dueAt.toStorageString()
+                + " | " + getCategory();
     }
 }

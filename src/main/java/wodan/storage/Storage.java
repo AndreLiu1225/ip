@@ -25,8 +25,11 @@ import wodan.task.Todo;
  */
 public class Storage {
     private static final int TODO_FIELD_COUNT = 3;
+    private static final int TODO_FIELD_COUNT_WITH_TAG = 4;
     private static final int DEADLINE_FIELD_COUNT = 4;
+    private static final int DEADLINE_FIELD_COUNT_WITH_TAG = 5;
     private static final int EVENT_FIELD_COUNT = 5;
+    private static final int EVENT_FIELD_COUNT_WITH_TAG = 6;
 
     private final Path filePath;
     private String loadWarning;
@@ -184,17 +187,19 @@ public class Storage {
     }
 
     /**
-     * Returns a todo if {@code parts} has exactly the todo field count.
+     * Returns a todo if {@code parts} has the todo fields, with an optional category.
      *
      * @param description Task description field.
      * @param parts All fields from the line.
      * @return The todo, or {@code null} if the field count is wrong.
      */
     private Todo parseStoredTodo(String description, String[] parts) {
-        if (parts.length != TODO_FIELD_COUNT) {
+        if (parts.length != TODO_FIELD_COUNT && parts.length != TODO_FIELD_COUNT_WITH_TAG) {
             return null;
         }
-        return new Todo(description);
+        Todo todo = new Todo(description);
+        applyStoredCategory(todo, parts, TODO_FIELD_COUNT);
+        return todo;
     }
 
     /**
@@ -205,14 +210,17 @@ public class Storage {
      * @return The deadline, or {@code null} if the due date is missing or invalid.
      */
     private Deadline parseStoredDeadline(String description, String[] parts) {
-        if (parts.length != DEADLINE_FIELD_COUNT || parts[3].isEmpty()) {
+        if ((parts.length != DEADLINE_FIELD_COUNT && parts.length != DEADLINE_FIELD_COUNT_WITH_TAG)
+                || parts[3].isEmpty()) {
             return null;
         }
         TaskDateTime dueAt = TaskDateTime.parseStorage(parts[3]);
         if (dueAt == null) {
             return null;
         }
-        return new Deadline(description, dueAt);
+        Deadline deadline = new Deadline(description, dueAt);
+        applyStoredCategory(deadline, parts, DEADLINE_FIELD_COUNT);
+        return deadline;
     }
 
     /**
@@ -223,7 +231,8 @@ public class Storage {
      * @return The event, or {@code null} if the times are missing, invalid, or reversed.
      */
     private Event parseStoredEvent(String description, String[] parts) {
-        if (parts.length != EVENT_FIELD_COUNT || parts[3].isEmpty() || parts[4].isEmpty()) {
+        if ((parts.length != EVENT_FIELD_COUNT && parts.length != EVENT_FIELD_COUNT_WITH_TAG)
+                || parts[3].isEmpty() || parts[4].isEmpty()) {
             return null;
         }
         TaskDateTime startAt = TaskDateTime.parseStorage(parts[3]);
@@ -234,7 +243,23 @@ public class Storage {
         if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
             return null;
         }
-        return new Event(description, startAt, endAt);
+        Event event = new Event(description, startAt, endAt);
+        applyStoredCategory(event, parts, EVENT_FIELD_COUNT);
+        return event;
+    }
+
+    /**
+     * Sets the category from the optional last save-file field.
+     * Old files without that field stay in {@code general}.
+     *
+     * @param task Task just parsed.
+     * @param parts All fields from the line.
+     * @param tagIndex Index of the category field.
+     */
+    private void applyStoredCategory(Task task, String[] parts, int tagIndex) {
+        if (parts.length > tagIndex && !parts[tagIndex].isEmpty()) {
+            task.setCategory(parts[tagIndex]);
+        }
     }
 
     /**

@@ -110,6 +110,27 @@ public class TaskList {
     }
 
     /**
+     * Returns category names that currently have at least one task.
+     * {@code general} comes first if any task is untagged; other names follow in A–Z order.
+     *
+     * @return Distinct category names in list-heading order.
+     */
+    public ArrayList<String> categoryNames() {
+        ArrayList<String> names = new ArrayList<>();
+        boolean hasGeneral = tasks.stream().anyMatch(Task::isGeneral);
+        if (hasGeneral) {
+            names.add(Task.DEFAULT_CATEGORY);
+        }
+        tasks.stream()
+                .map(Task::getCategory)
+                .filter(name -> !Task.DEFAULT_CATEGORY.equals(name))
+                .distinct()
+                .sorted()
+                .forEach(names::add);
+        return names;
+    }
+
+    /**
      * Returns 1-based list numbers of tasks that satisfy {@code matches}.
      *
      * @param matches Test applied to each task.

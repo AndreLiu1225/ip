@@ -73,13 +73,14 @@ public class Event extends Task {
     }
 
     /**
-     * Returns this event as {@code E | 0|1 | description | start | end}.
+     * Returns this event as {@code E | 0|1 | description | start | end | category}.
      *
      * @return One save-file line.
      */
     @Override
     public String toStorageString() {
         return toStoragePrefix(STORAGE_TYPE_EVENT)
-                + " | " + startAt.toStorageString() + " | " + endAt.toStorageString();
+                + " | " + startAt.toStorageString() + " | " + endAt.toStorageString()
+                + " | " + getCategory();
     }
 }

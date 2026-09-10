@@ -33,7 +33,7 @@ public class EventTest {
                 TaskDateTime.parse("2019-12-02 1600"));
         assertEquals("[E][ ] meeting (from: Dec 02 2019, 2:00pm to: Dec 02 2019, 4:00pm)",
                 event.toString());
-        assertEquals("E | 0 | meeting | 2019-12-02T14:00 | 2019-12-02T16:00",
+        assertEquals("E | 0 | meeting | 2019-12-02T14:00 | 2019-12-02T16:00 | general",
                 event.toStorageString());
     }
 }

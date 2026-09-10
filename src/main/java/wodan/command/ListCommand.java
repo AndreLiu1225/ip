@@ -5,7 +5,7 @@ import wodan.task.TaskList;
 import wodan.ui.Ui;
 
 /**
- * Shows every task in the list, numbered from 1.
+ * Shows every task in the list, grouped by category, with original 1-based numbers.
  */
 public class ListCommand extends Command {
     /**
@@ -15,7 +15,9 @@ public class ListCommand extends Command {
     }
 
     /**
-     * Shows every task in {@code tasks}, numbered from 1.
+     * Shows every task in {@code tasks}, grouped by category.
+     * Untagged tasks appear under {@code general} first; other categories follow A–Z.
+     * Numbers match list order so {@code mark 2} still means the second task.
      *
      * @param tasks The task list to show.
      * @param ui The user interface for the reply.
@@ -24,8 +26,18 @@ public class ListCommand extends Command {
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) {
         ui.show("    The ravens have given these quests.\n");
-        for (int i = 0; i < tasks.size(); i++) {
-            ui.showNumberedTask(i + 1, tasks.get(i));
+        if (tasks.isEmpty()) {
+            return;
+        }
+
+        for (String category : tasks.categoryNames()) {
+            ui.show("    " + category);
+            for (int i = 0; i < tasks.size(); i++) {
+                if (tasks.get(i).getCategory().equals(category)) {
+                    ui.showNumberedTask(i + 1, tasks.get(i));
+                }
+            }
+            ui.show("");
         }
     }
 }
