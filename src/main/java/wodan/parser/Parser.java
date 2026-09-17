@@ -31,6 +31,11 @@ public class Parser {
     private static final String TO_SPLIT_PATTERN = "\\s+" + TO_MARKER + "(?:\\s+|$)";
     private static final String EVENT_USAGE = "Try: event meeting " + FROM_MARKER
             + " 2019-12-02 1400 " + TO_MARKER + " 2019-12-02 1600";
+    private static final String DEADLINE_USAGE = "Try: deadline return book " + BY_MARKER
+            + " 2019-12-02";
+    private static final String TODO_USAGE = "Try: todo borrow book";
+    private static final String EVENT_RANGE_ERROR =
+            "An event cannot end before or at the same time it starts.";
 
     /**
      * Prevents instantiation; command parsing is done through static methods.
@@ -91,7 +96,7 @@ public class Parser {
                     "Silence is not a command. Speak todo, deadline, event, list, mark, "
                             + "unmark, delete, on, find, tag, or bye.");
         }
-        return trimmed.split(" ", 2);
+        return trimmed.split("\\s+", 2);
     }
 
     /**
@@ -102,10 +107,13 @@ public class Parser {
      * @throws WodanException If the description is missing or contains {@code |}.
      */
     private static Todo parseTodo(String arguments) throws WodanException {
-        String description = arguments.trim();
+        rejectUnexpectedMarkers(arguments,
+                "A todo has no date. Leave out /by, /from, and /to. " + TODO_USAGE,
+                BY_MARKER, FROM_MARKER, TO_MARKER);
+        String description = normalizeSpaces(arguments);
         if (description.isEmpty()) {
             throw new WodanException(
-                    "A todo needs a quest name. Try: todo borrow book");
+                    "A todo needs a quest name. " + TODO_USAGE);
         }
         rejectFileDelimiter(description);
         return new Todo(description);
@@ -119,28 +127,34 @@ public class Parser {
      * @throws WodanException If the description, {@code /by} time, or date is invalid.
      */
     private static Deadline parseDeadline(String arguments) throws WodanException {
+        rejectUnexpectedMarkers(arguments,
+                "A deadline uses /by, not /from or /to. " + DEADLINE_USAGE,
+                FROM_MARKER, TO_MARKER);
+        rejectDuplicateMarker(arguments, BY_MARKER,
+                "Use /by only once. " + DEADLINE_USAGE);
+
         String[] deadlineParts = arguments.split(BY_SPLIT_PATTERN, 2);
-        String description = deadlineParts[0].trim();
-        String by = deadlineParts.length > 1 ? deadlineParts[1].trim() : "";
+        String description = normalizeSpaces(deadlineParts[0]);
+        String by = deadlineParts.length > 1 ? normalizeSpaces(deadlineParts[1]) : "";
         if (description.startsWith(BY_MARKER)) {
             throw new WodanException(
                     "A deadline needs a quest name before " + BY_MARKER
-                            + ". Try: deadline return book " + BY_MARKER + " 2019-12-02");
+                            + ". " + DEADLINE_USAGE);
         }
         if (description.isEmpty()) {
             throw new WodanException(
                     "A deadline needs a quest name and " + BY_MARKER
-                            + " <when>. Try: deadline return book " + BY_MARKER + " 2019-12-02");
+                            + " <when>. " + DEADLINE_USAGE);
         }
         if (deadlineParts.length < 2) {
             throw new WodanException(
                     "A deadline must include " + BY_MARKER
-                            + " <when>. Try: deadline return book " + BY_MARKER + " 2019-12-02");
+                            + " <when>. " + DEADLINE_USAGE);
         }
         if (by.isEmpty()) {
             throw new WodanException(
                     "The ravens need a time after " + BY_MARKER
-                            + ". Try: deadline return book " + BY_MARKER + " 2019-12-02");
+                            + ". " + DEADLINE_USAGE);
         }
         rejectFileDelimiter(description);
         rejectFileDelimiter(by);
@@ -156,20 +170,30 @@ public class Parser {
      * @throws WodanException If the description, times, or date range is invalid.
      */
     private static Event parseEvent(String arguments) throws WodanException {
+        rejectUnexpectedMarkers(arguments,
+                "An event uses /from and /to, not /by. " + EVENT_USAGE,
+                BY_MARKER);
+        rejectDuplicateMarker(arguments, FROM_MARKER,
+                "Use /from only once. " + EVENT_USAGE);
+        rejectDuplicateMarker(arguments, TO_MARKER,
+                "Use /to only once. " + EVENT_USAGE);
+
         String[] fromParts = arguments.split(FROM_SPLIT_PATTERN, 2);
-        String description = fromParts[0].trim();
+        String description = normalizeSpaces(fromParts[0]);
         rejectInvalidEventDescription(description, fromParts.length);
 
         EventTimeRange times = splitEventTimes(fromParts[1].trim());
         rejectInvalidEventTimes(times);
 
+        String from = normalizeSpaces(times.from);
+        String to = normalizeSpaces(times.to);
         rejectFileDelimiter(description);
-        rejectFileDelimiter(times.from);
-        rejectFileDelimiter(times.to);
-        TaskDateTime startAt = TaskDateTime.parse(times.from);
-        TaskDateTime endAt = TaskDateTime.parse(times.to);
-        if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
-            throw new WodanException("An event cannot end before it starts.");
+        rejectFileDelimiter(from);
+        rejectFileDelimiter(to);
+        TaskDateTime startAt = TaskDateTime.parse(from);
+        TaskDateTime endAt = TaskDateTime.parse(to);
+        if (!Event.isValidRange(startAt, endAt)) {
+            throw new WodanException(EVENT_RANGE_ERROR);
         }
         return new Event(description, startAt, endAt);
     }
@@ -257,6 +281,7 @@ public class Parser {
      * @throws WodanException If the number is missing, not an integer, or out of range.
      */
     public static int parseDeleteNumber(String arguments, TaskList tasks) throws WodanException {
+        rejectExtraTokens(arguments, "delete takes only a quest number. Try: delete 1");
         return parseTaskNumber(arguments, tasks,
                 "Which quest is too burdensome? Try: delete 1",
                 "' is not a quest number. Try: delete 1",
@@ -272,6 +297,7 @@ public class Parser {
      * @throws WodanException If the number is missing, not an integer, or out of range.
      */
     public static int parseMarkNumber(String arguments, TaskList tasks) throws WodanException {
+        rejectExtraTokens(arguments, "mark takes only a quest number. Try: mark 1");
         return parseTaskNumber(arguments, tasks,
                 "Which quest should the ravens mark? Try: mark 1",
                 "' is not a quest number. Try: mark 1",
@@ -287,6 +313,7 @@ public class Parser {
      * @throws WodanException If the number is missing, not an integer, or out of range.
      */
     public static int parseUnmarkNumber(String arguments, TaskList tasks) throws WodanException {
+        rejectExtraTokens(arguments, "unmark takes only a quest number. Try: unmark 1");
         return parseTaskNumber(arguments, tasks,
                 "Which quest should the ravens unmark? Try: unmark 1",
                 "' is not a quest number. Try: unmark 1",
@@ -305,7 +332,7 @@ public class Parser {
             throw new WodanException(
                     "Which day should the ravens search? Try: on 2019-12-02");
         }
-        return TaskDateTime.parse(arguments.trim()).toLocalDate();
+        return TaskDateTime.parse(normalizeSpaces(arguments)).toLocalDate();
     }
 
     /**
@@ -316,7 +343,7 @@ public class Parser {
      * @throws WodanException If the keyword is missing.
      */
     public static String parseFindKeyword(String arguments) throws WodanException {
-        String keyword = arguments.trim();
+        String keyword = normalizeSpaces(arguments);
         if (keyword.isEmpty()) {
             throw new WodanException(
                     "Which word should the ravens seek? Try: find book");
@@ -353,9 +380,85 @@ public class Parser {
             throw new WodanException(
                     "Name the brand. Try: tag 1 school");
         }
-        String category = parts[1].trim();
+        String category = normalizeSpaces(parts[1]);
         rejectFileDelimiter(category);
         return category;
+    }
+
+    /**
+     * Returns {@code text} with leading and trailing spaces removed and inner gaps collapsed.
+     *
+     * @param text Raw argument text.
+     * @return A single-spaced string, which may be empty.
+     */
+    private static String normalizeSpaces(String text) {
+        return text.trim().replaceAll("\\s+", " ");
+    }
+
+    /**
+     * Returns how many times {@code token} appears as a whole word in {@code text}.
+     *
+     * @param text Argument text to scan.
+     * @param token Whole token to count, such as {@code /by}.
+     * @return The number of matching tokens.
+     */
+    private static int countToken(String text, String token) {
+        if (text.isBlank()) {
+            return 0;
+        }
+        int count = 0;
+        for (String part : text.trim().split("\\s+")) {
+            if (part.equals(token)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Rejects {@code arguments} that contain any of {@code markers} as whole tokens.
+     *
+     * @param arguments Text after the command word.
+     * @param message Error to show if a marker is present.
+     * @param markers Tokens that must not appear.
+     * @throws WodanException If a forbidden marker is present.
+     */
+    private static void rejectUnexpectedMarkers(String arguments, String message, String... markers)
+            throws WodanException {
+        for (String marker : markers) {
+            if (countToken(arguments, marker) > 0) {
+                throw new WodanException(message);
+            }
+        }
+    }
+
+    /**
+     * Rejects {@code arguments} that contain {@code marker} more than once.
+     *
+     * @param arguments Text after the command word.
+     * @param marker Token that may appear at most once.
+     * @param message Error to show if the marker is repeated.
+     * @throws WodanException If the marker appears more than once.
+     */
+    private static void rejectDuplicateMarker(String arguments, String marker, String message)
+            throws WodanException {
+        if (countToken(arguments, marker) > 1) {
+            throw new WodanException(message);
+        }
+    }
+
+    /**
+     * Rejects {@code arguments} that contain more than one token.
+     *
+     * @param arguments Text after the command word.
+     * @param message Error to show if extra tokens are present.
+     * @throws WodanException If more than one token is present.
+     */
+    private static void rejectExtraTokens(String arguments, String message) throws WodanException {
+        String trimmed = arguments.trim();
+        if (!trimmed.isEmpty() && trimmed.split("\\s+").length > 1) {
+            throw new WodanException(message);
+        }
     }
 
     /**

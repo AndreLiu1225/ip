@@ -37,6 +37,16 @@ public class WodanTest {
     }
 
     @Test
+    public void getResponse_duplicateTodo_setsError() {
+        Wodan wodan = new Wodan(tempDir.resolve("wodan.txt").toString());
+        wodan.getResponse("todo borrow book");
+        String reply = wodan.getResponse("todo borrow book");
+        assertTrue(wodan.wasError());
+        assertTrue(reply.contains("already on the list"));
+        assertFalse(wodan.isExit());
+    }
+
+    @Test
     public void getGreeting_noSaveFile_welcomeOnly() {
         Wodan wodan = new Wodan(tempDir.resolve("wodan.txt").toString());
         assertEquals(

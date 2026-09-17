@@ -78,6 +78,16 @@ public class TaskList {
     }
 
     /**
+     * Returns whether a quest with the same details as {@code task} is already in the list.
+     *
+     * @param task Quest to look for.
+     * @return {@code true} if a duplicate is already stored.
+     */
+    public boolean containsSameDetails(Task task) {
+        return tasks.stream().anyMatch(existing -> existing.hasSameDetails(task));
+    }
+
+    /**
      * Returns the tasks in list order, for writing to the save file.
      * Callers must not add or remove elements through this list.
      *

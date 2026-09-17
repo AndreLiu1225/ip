@@ -146,6 +146,16 @@ public class TaskDateTime {
     }
 
     /**
+     * Returns whether {@code other} stores the same date, time, and time-of-day flag.
+     *
+     * @param other Value to compare.
+     * @return {@code true} if both values would print and save the same way.
+     */
+    public boolean hasSameValue(TaskDateTime other) {
+        return hasTime == other.hasTime && dateTime.equals(other.dateTime);
+    }
+
+    /**
      * Returns a parsed date-time from {@code text}, or {@code null} if no supported pattern matches.
      * Tries ISO date-times with {@code T}, then date-time patterns, then date-only patterns.
      *

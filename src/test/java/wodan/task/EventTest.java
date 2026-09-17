@@ -27,6 +27,14 @@ public class EventTest {
     }
 
     @Test
+    public void isValidRange_sameInstantWithTime_false() throws WodanException {
+        TaskDateTime noon = TaskDateTime.parse("2019-12-02 1200");
+        assertFalse(Event.isValidRange(noon, noon));
+        TaskDateTime dateOnly = TaskDateTime.parse("2019-12-02");
+        assertTrue(Event.isValidRange(dateOnly, dateOnly));
+    }
+
+    @Test
     public void toStringAndStorage_unmarkedEvent_includesFromAndTo() throws WodanException {
         Event event = new Event("meeting",
                 TaskDateTime.parse("2019-12-02 1400"),

@@ -9,8 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
+import java.util.Set;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -114,6 +117,25 @@ public class StorageTest {
         assertEquals("also keep", loaded.get(1).getDescription());
         assertEquals("The ravens skipped 2 corrupted quests in the save file.",
                 storage.getLoadWarning());
+    }
+
+    @Test
+    public void load_unreadableFile_exceptionThrown() throws Exception {
+        Assumptions.assumeTrue(
+                tempDir.getFileSystem().supportedFileAttributeViews().contains("posix"));
+        Path file = tempDir.resolve("locked.txt");
+        Files.writeString(file, "T | 0 | keep\n", StandardCharsets.UTF_8);
+        Files.setPosixFilePermissions(file, Set.of());
+        try {
+            Storage storage = new Storage(file.toString());
+            WodanException ex = assertThrows(WodanException.class, storage::load);
+            assertEquals(
+                    "The ravens were denied access to the save file. "
+                            + "They could not recall the quests.",
+                    ex.getMessage());
+        } finally {
+            Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
+        }
     }
 
     @Test

@@ -123,7 +123,8 @@ public class ParserTest {
     public void parse_eventEndsBeforeStart_exceptionThrown() {
         WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
                 "event meeting /from 2019-12-02 1600 /to 2019-12-02 1400"));
-        assertEquals("An event cannot end before it starts.", ex.getMessage());
+        assertEquals("An event cannot end before or at the same time it starts.",
+                ex.getMessage());
     }
 
     @Test
@@ -134,6 +135,86 @@ public class ParserTest {
                 "An event must include /to <end>. "
                         + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
                 ex.getMessage());
+    }
+
+    @Test
+    public void parse_todoWithExtraSpaces_collapsesGaps() throws WodanException {
+        Task task = addedTask("  todo   borrow   book  ");
+        assertEquals("[T][ ] borrow book", task.toString());
+    }
+
+    @Test
+    public void parse_todoWithDateMarker_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "todo borrow book /by 2019-12-02"));
+        assertEquals(
+                "A todo has no date. Leave out /by, /from, and /to. Try: todo borrow book",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_deadlineRepeatedBy_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline return book /by 2019-12-02 /by 2019-12-03"));
+        assertEquals(
+                "Use /by only once. Try: deadline return book /by 2019-12-02",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_deadlineWithFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline return book /from 2019-12-02"));
+        assertEquals(
+                "A deadline uses /by, not /from or /to. Try: deadline return book /by 2019-12-02",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventEndsAtSameTime_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019-12-02 1400 /to 2019-12-02 1400"));
+        assertEquals("An event cannot end before or at the same time it starts.",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventSameDateOnly_addCommandWithEvent() throws WodanException {
+        Task task = addedTask("event camp /from 2019-12-02 /to 2019-12-02");
+        assertInstanceOf(Event.class, task);
+        assertEquals("[E][ ] camp (from: Dec 02 2019 to: Dec 02 2019)", task.toString());
+    }
+
+    @Test
+    public void parse_eventRepeatedTo_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019-12-02 1400 /to 2019-12-02 1600 /to 2019-12-02 1700"));
+        assertEquals(
+                "Use /to only once. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parseMarkNumber_extraToken_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseMarkNumber(
+                "1 extra", tasks));
+        assertEquals("mark takes only a quest number. Try: mark 1", ex.getMessage());
+    }
+
+    @Test
+    public void parse_duplicateTodo_exceptionThrown() throws WodanException {
+        TaskList tasks = new TaskList();
+        Storage storage = new Storage(tempDir.resolve("wodan.txt").toString());
+        Parser.parse("todo borrow book").execute(tasks, new Ui(), storage);
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "todo borrow book").execute(tasks, new Ui(), storage));
+        assertEquals(
+                "That quest is already on the list. The ravens will not record it twice.",
+                ex.getMessage());
+        assertEquals(1, tasks.size());
     }
 
     @Test

@@ -159,5 +159,19 @@ public abstract class Task {
         return description.toLowerCase(Locale.ROOT)
                 .contains(keyword.toLowerCase(Locale.ROOT));
     }
+
+    /**
+     * Returns whether {@code other} is the same kind of quest with the same details.
+     * Done status and category are ignored.
+     *
+     * @param other Task to compare, which may be {@code null}.
+     * @return {@code true} if adding both would look like a duplicated quest.
+     */
+    public boolean hasSameDetails(Task other) {
+        if (other == null || getClass() != other.getClass()) {
+            return false;
+        }
+        return getDescription().equals(other.getDescription());
+    }
 }
 

@@ -2,6 +2,7 @@ package wodan.storage;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -71,6 +72,11 @@ public class Storage {
             throw new WodanException(
                     "The save path is not a file. The ravens could not recall the quests.");
         }
+        if (!Files.isReadable(filePath)) {
+            throw new WodanException(
+                    "The ravens were denied access to the save file. "
+                            + "They could not recall the quests.");
+        }
 
         try {
             List<String> lines = new ArrayList<>(
@@ -91,6 +97,10 @@ public class Storage {
                 loadWarning = "The ravens skipped " + skipped + " corrupted quests in the save file.";
             }
             return loaded;
+        } catch (AccessDeniedException e) {
+            throw new WodanException(
+                    "The ravens were denied access to the save file. "
+                            + "They could not recall the quests.");
         } catch (IOException e) {
             throw new WodanException("The ravens could not recall the quests.");
         }
@@ -107,6 +117,11 @@ public class Storage {
             throw new WodanException(
                     "The save path is not a file. The ravens could not record the quests.");
         }
+        if (Files.exists(filePath) && !Files.isWritable(filePath)) {
+            throw new WodanException(
+                    "The ravens were denied access to the save file. "
+                            + "They could not record the quests.");
+        }
 
         try {
             createParentDirectory();
@@ -115,6 +130,10 @@ public class Storage {
                     .map(Task::toStorageString)
                     .collect(Collectors.toList());
             Files.write(filePath, lines, StandardCharsets.UTF_8);
+        } catch (AccessDeniedException e) {
+            throw new WodanException(
+                    "The ravens were denied access to the save file. "
+                            + "They could not record the quests.");
         } catch (IOException e) {
             throw new WodanException("The ravens could not record the quests.");
         }
@@ -240,7 +259,7 @@ public class Storage {
         if (startAt == null || endAt == null) {
             return null;
         }
-        if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
+        if (!Event.isValidRange(startAt, endAt)) {
             return null;
         }
         Event event = new Event(description, startAt, endAt);

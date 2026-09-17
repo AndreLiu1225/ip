@@ -27,10 +27,14 @@ public class AddCommand extends Command {
      * @param tasks The task list to change.
      * @param ui The user interface for the reply.
      * @param storage The save file to update.
-     * @throws WodanException If the list cannot be saved.
+     * @throws WodanException If the quest is a duplicate, or the list cannot be saved.
      */
     @Override
     public void execute(TaskList tasks, Ui ui, Storage storage) throws WodanException {
+        if (tasks.containsSameDetails(task)) {
+            throw new WodanException(
+                    "That quest is already on the list. The ravens will not record it twice.");
+        }
         tasks.add(task);
         storage.save(tasks.getTasks());
         ui.show("    You have accepted the following quest:",

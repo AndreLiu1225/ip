@@ -21,10 +21,29 @@ public class Event extends Task {
     public Event(String description, TaskDateTime startAt, TaskDateTime endAt) {
         super(description);
         assert startAt != null && endAt != null : "Event needs a start and an end";
-        assert !endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())
-                : "Event end cannot be before start";
+        assert isValidRange(startAt, endAt) : "Event end must be after start";
         this.startAt = startAt;
         this.endAt = endAt;
+    }
+
+    /**
+     * Returns whether {@code endAt} is a valid end for an event that starts at {@code startAt}.
+     * A date-only event may start and end on the same calendar day.
+     * If a time of day is given, the end must be after the start.
+     *
+     * @param startAt Event start.
+     * @param endAt Event end.
+     * @return {@code true} if the range is allowed.
+     */
+    public static boolean isValidRange(TaskDateTime startAt, TaskDateTime endAt) {
+        if (endAt.toLocalDateTime().isBefore(startAt.toLocalDateTime())) {
+            return false;
+        }
+        if (endAt.toLocalDateTime().equals(startAt.toLocalDateTime())
+                && (startAt.hasTime() || endAt.hasTime())) {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -55,6 +74,21 @@ public class Event extends Task {
      */
     public TaskDateTime getEndAt() {
         return this.endAt;
+    }
+
+    /**
+     * Returns whether {@code other} is an event with the same description, start, and end.
+     *
+     * @param other Task to compare, which may be {@code null}.
+     * @return {@code true} if both events would look like the same quest.
+     */
+    @Override
+    public boolean hasSameDetails(Task other) {
+        if (!super.hasSameDetails(other)) {
+            return false;
+        }
+        Event event = (Event) other;
+        return startAt.hasSameValue(event.startAt) && endAt.hasSameValue(event.endAt);
     }
 
     /**

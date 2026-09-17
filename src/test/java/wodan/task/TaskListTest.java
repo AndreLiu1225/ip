@@ -106,6 +106,17 @@ public class TaskListTest {
     }
 
     @Test
+    public void containsSameDetails_duplicateTodoAndDistinctDeadline_trueThenFalse()
+            throws WodanException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("borrow book"));
+        assertTrue(tasks.containsSameDetails(new Todo("borrow book")));
+        assertFalse(tasks.containsSameDetails(new Todo("other")));
+        assertFalse(tasks.containsSameDetails(
+                new Deadline("borrow book", TaskDateTime.parse("2019-12-02"))));
+    }
+
+    @Test
     public void taskNumbersMatching_noMatches_emptyList() {
         TaskList tasks = new TaskList();
         tasks.add(new Todo("read song"));
