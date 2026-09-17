@@ -85,7 +85,7 @@ Expected reply:
 ```
 You have accepted the following quest:
     [T][ ] borrow book
- Now you have 1 tasks in the list.
+ Now you have 1 task in the list.
 ```
 
 `[T]` means todo. `[ ]` means not done yet.

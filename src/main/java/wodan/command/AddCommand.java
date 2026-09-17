@@ -39,6 +39,6 @@ public class AddCommand extends Command {
         storage.save(tasks.getTasks());
         ui.show("    You have accepted the following quest:",
                 "        " + task.toString(),
-                "     Now you have " + tasks.size() + " tasks in the list.");
+                "     Now you have " + Ui.formatTaskCount(tasks.size()) + " in the list.");
     }
 }

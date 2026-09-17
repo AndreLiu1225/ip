@@ -65,6 +65,19 @@ public class Ui {
     }
 
     /**
+     * Returns a count phrase that uses singular {@code task} when {@code count} is 1.
+     *
+     * @param count Number of tasks in the list.
+     * @return Text such as {@code 1 task} or {@code 2 tasks}.
+     */
+    public static String formatTaskCount(int count) {
+        if (count == 1) {
+            return "1 task";
+        }
+        return count + " tasks";
+    }
+
+    /**
      * Returns whether another line of user input is available.
      *
      * @return {@code true} if a command line can be read.

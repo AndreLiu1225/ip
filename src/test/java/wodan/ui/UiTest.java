@@ -21,6 +21,13 @@ import wodan.task.Todo;
  */
 public class UiTest {
     @Test
+    public void formatTaskCount_oneAndMany_singularThenPlural() {
+        assertEquals("0 tasks", Ui.formatTaskCount(0));
+        assertEquals("1 task", Ui.formatTaskCount(1));
+        assertEquals("2 tasks", Ui.formatTaskCount(2));
+    }
+
+    @Test
     public void getGreetingText_twoHailLines() {
         assertEquals(
                 "Hail, wanderer. Wodan is listening.\nWhat is your command?",

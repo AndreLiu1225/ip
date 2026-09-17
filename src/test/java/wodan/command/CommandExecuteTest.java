@@ -74,9 +74,18 @@ public class CommandExecuteTest {
         String output = execute("delete 1", tasks);
         assertTrue(output.contains("Noted. I've removed this task:"));
         assertTrue(output.contains("[T][ ] first"));
-        assertTrue(output.contains("Now you have 1 tasks in the list."));
+        assertTrue(output.contains("Now you have 1 task in the list."));
         assertEquals(1, tasks.size());
         assertEquals("second", tasks.get(0).getDescription());
+    }
+
+    @Test
+    public void execute_deleteLastRemaining_reportsZeroTasks() throws WodanException {
+        TaskList tasks = new TaskList();
+        execute("todo only", tasks);
+        String output = execute("delete 1", tasks);
+        assertTrue(output.contains("Now you have 0 tasks in the list."));
+        assertTrue(tasks.isEmpty());
     }
 
     @Test
