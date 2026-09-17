@@ -30,8 +30,9 @@ public class Main extends Application {
             scene.getStylesheets().add(Main.class.getResource("/css/wodan.css").toExternalForm());
             stage.setScene(scene);
             stage.setTitle("Wodan");
-            stage.setMinWidth(420);
-            stage.setMinHeight(560);
+            stage.setResizable(true);
+            stage.setMinWidth(360);
+            stage.setMinHeight(420);
             stage.getIcons().add(new Image(Main.class.getResourceAsStream("/images/wodan.png")));
             fxmlLoader.<MainWindow>getController().setWodan(wodan);
             stage.show();

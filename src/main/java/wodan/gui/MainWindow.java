@@ -1,12 +1,15 @@
 package wodan.gui;
 
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import wodan.Wodan;
@@ -15,6 +18,8 @@ import wodan.Wodan;
  * Controller for the main chat window.
  */
 public class MainWindow extends VBox {
+    private static final String INPUT_ERROR_STYLE = "command-field-error";
+
     @FXML
     private ScrollPane scrollPane;
     @FXML
@@ -23,11 +28,11 @@ public class MainWindow extends VBox {
     private TextField userInput;
     @FXML
     private Button sendButton;
+    @FXML
+    private ImageView headerPortrait;
 
     private Wodan wodan;
 
-    private final Image userImage = new Image(
-            this.getClass().getResourceAsStream("/images/wanderer.png"));
     private final Image wodanImage = new Image(
             this.getClass().getResourceAsStream("/images/wodan.png"));
 
@@ -37,7 +42,10 @@ public class MainWindow extends VBox {
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
-        userInput.setStyle("-fx-text-fill: #FFFFFF; -fx-control-inner-background: #1e222c;");
+        headerPortrait.setImage(wodanImage);
+        double radius = headerPortrait.getFitWidth() / 2;
+        headerPortrait.setClip(new Circle(radius, radius, radius));
+        Platform.runLater(() -> userInput.requestFocus());
     }
 
     /**
@@ -47,8 +55,11 @@ public class MainWindow extends VBox {
      */
     public void setWodan(Wodan wodan) {
         this.wodan = wodan;
-        dialogContainer.getChildren().add(
-                DialogBox.getWodanDialog(wodan.getGreeting(), wodanImage));
+        dialogContainer.getChildren().add(DialogBox.getWodanDialog(wodan.getGreeting()));
+        String loadMessage = wodan.getLoadMessage();
+        if (loadMessage != null) {
+            dialogContainer.getChildren().add(DialogBox.getErrorDialog(loadMessage));
+        }
     }
 
     /**
@@ -63,9 +74,14 @@ public class MainWindow extends VBox {
         }
 
         String response = wodan.getResponse(input);
-        dialogContainer.getChildren().addAll(
-                DialogBox.getUserDialog(input, userImage),
-                DialogBox.getWodanDialog(response, wodanImage));
+        dialogContainer.getChildren().add(DialogBox.getUserDialog(input));
+        if (wodan.wasError()) {
+            dialogContainer.getChildren().add(DialogBox.getErrorDialog(response));
+            setInputErrorState(true);
+        } else {
+            dialogContainer.getChildren().add(DialogBox.getWodanDialog(response));
+            setInputErrorState(false);
+        }
         userInput.clear();
 
         if (wodan.isExit()) {
@@ -77,6 +93,13 @@ public class MainWindow extends VBox {
                 stage.close();
             });
             delay.play();
+        }
+    }
+
+    private void setInputErrorState(boolean isError) {
+        userInput.getStyleClass().remove(INPUT_ERROR_STYLE);
+        if (isError) {
+            userInput.getStyleClass().add(INPUT_ERROR_STYLE);
         }
     }
 }

@@ -2,6 +2,7 @@ package wodan;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -23,6 +24,7 @@ public class WodanTest {
         assertTrue(reply.contains("borrow book"));
         assertTrue(reply.contains("accepted the following quest"));
         assertFalse(wodan.isExit());
+        assertFalse(wodan.wasError());
     }
 
     @Test
@@ -31,6 +33,7 @@ public class WodanTest {
         String reply = wodan.getResponse("bye");
         assertEquals("So it is written. Farewell, wanderer.", reply);
         assertTrue(wodan.isExit());
+        assertFalse(wodan.wasError());
     }
 
     @Test
@@ -39,5 +42,31 @@ public class WodanTest {
         assertEquals(
                 "Hail, wanderer. Wodan is listening.\nWhat is your command?",
                 wodan.getGreeting());
+    }
+
+    @Test
+    public void getLoadMessage_noSaveFile_null() {
+        Wodan wodan = new Wodan(tempDir.resolve("wodan.txt").toString());
+        assertNull(wodan.getLoadMessage());
+    }
+
+    @Test
+    public void getResponse_unknownCommand_setsError() {
+        Wodan wodan = new Wodan(tempDir.resolve("wodan.txt").toString());
+        String reply = wodan.getResponse("blah");
+        assertTrue(wodan.wasError());
+        assertTrue(reply.contains("That rune is unknown"));
+        assertFalse(wodan.isExit());
+    }
+
+    @Test
+    public void getResponse_validThenInvalid_errorFlagFollowsLastReply() {
+        Wodan wodan = new Wodan(tempDir.resolve("wodan.txt").toString());
+        wodan.getResponse("todo borrow book");
+        assertFalse(wodan.wasError());
+        wodan.getResponse("not-a-command");
+        assertTrue(wodan.wasError());
+        wodan.getResponse("list");
+        assertFalse(wodan.wasError());
     }
 }
