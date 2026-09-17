@@ -17,8 +17,10 @@ import wodan.command.DeleteCommand;
 import wodan.command.ExitCommand;
 import wodan.command.FindCommand;
 import wodan.command.ListCommand;
+import wodan.command.MarkCommand;
 import wodan.command.OnCommand;
 import wodan.command.TagCommand;
+import wodan.command.UnmarkCommand;
 import wodan.storage.Storage;
 import wodan.task.Deadline;
 import wodan.task.Event;
@@ -329,6 +331,251 @@ public class ParserTest {
     public void parseFindKeyword_missingKeyword_exceptionThrown() {
         WodanException ex = assertThrows(WodanException.class, () -> Parser.parseFindKeyword(""));
         assertEquals("Which word should the ravens seek? Try: find book", ex.getMessage());
+    }
+
+    @Test
+    public void parse_markUnmarkAndDeadlineWithTime_matchingTypes() throws WodanException {
+        assertInstanceOf(MarkCommand.class, Parser.parse("mark 1"));
+        assertInstanceOf(UnmarkCommand.class, Parser.parse("UNMARK 1"));
+        Task task = addedTask("deadline return book /by 2/12/2019 1800");
+        assertInstanceOf(Deadline.class, task);
+        assertEquals("[D][ ] return book (by: Dec 02 2019, 6:00pm)", task.toString());
+    }
+
+    @Test
+    public void parse_deadlineEmptyWhen_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline return book /by   "));
+        assertEquals(
+                "The ravens need a time after /by. Try: deadline return book /by 2019-12-02",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_deadlineEmptyDescription_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse("deadline"));
+        assertEquals(
+                "A deadline needs a quest name and /by <when>. "
+                        + "Try: deadline return book /by 2019-12-02",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_deadlinePipeInBy_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline return book /by 2019|12-02"));
+        assertEquals(
+                "A quest cannot contain '|'. The ravens use that mark in the save file.",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventMissingFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting"));
+        assertEquals(
+                "An event must include /from <start> and /to <end>. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventEmptyTo_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019-12-02 1400 /to"));
+        assertEquals(
+                "The ravens need an end time after /to. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventEmptyFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from /to 2019-12-02 1600"));
+        assertEquals(
+                "The ravens need a start time after /from. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventEmptyDescription_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse("event"));
+        assertEquals(
+                "An event needs a name, /from <start>, and /to <end>. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventWithBy_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /by 2019-12-02 /from 2019-12-02 1400 /to 2019-12-02 1600"));
+        assertEquals(
+                "An event uses /from and /to, not /by. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventRepeatedFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019-12-02 1400 /from 2019-12-02 1500 /to 2019-12-02 1600"));
+        assertEquals(
+                "Use /from only once. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventPipeInName_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meet | ing /from 2019-12-02 1400 /to 2019-12-02 1600"));
+        assertEquals(
+                "A quest cannot contain '|'. The ravens use that mark in the save file.",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parseUnmarkNumber_extraTokenAndOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        WodanException extra = assertThrows(WodanException.class, () -> Parser.parseUnmarkNumber(
+                "1 extra", tasks));
+        assertEquals("unmark takes only a quest number. Try: unmark 1", extra.getMessage());
+        WodanException range = assertThrows(WodanException.class, () -> Parser.parseUnmarkNumber(
+                "2", tasks));
+        assertEquals(
+                "There is no quest 2. The ravens watch over 1 quest. Try a number from 1 to 1.",
+                range.getMessage());
+    }
+
+    @Test
+    public void parseDeleteNumber_extraToken_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseDeleteNumber(
+                "1 extra", tasks));
+        assertEquals("delete takes only a quest number. Try: delete 1", ex.getMessage());
+    }
+
+    @Test
+    public void parseOnDate_paddedDate_returnsLocalDate() throws WodanException {
+        assertEquals(java.time.LocalDate.of(2019, 12, 2), Parser.parseOnDate("  2019-12-02  "));
+    }
+
+    @Test
+    public void parseFindKeyword_collapsedSpaces_returnsKeyword() throws WodanException {
+        assertEquals("return book", Parser.parseFindKeyword("  return   book  "));
+    }
+
+    @Test
+    public void parseMarkNumber_notANumberAndOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        WodanException notNumber = assertThrows(WodanException.class, () -> Parser.parseMarkNumber(
+                "first", tasks));
+        assertEquals("'first' is not a quest number. Try: mark 1", notNumber.getMessage());
+        WodanException empty = assertThrows(WodanException.class, () -> Parser.parseMarkNumber(
+                "1", new TaskList()));
+        assertEquals(
+                "There are no quests to mark yet. Add one with todo, deadline, or event.",
+                empty.getMessage());
+    }
+
+    @Test
+    public void parse_todoWithFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "todo borrow book /from 2019-12-02"));
+        assertEquals(
+                "A todo has no date. Leave out /by, /from, and /to. Try: todo borrow book",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_deadlineWithTo_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "deadline return book /by 2019-12-02 /to 2019-12-03"));
+        assertEquals(
+                "A deadline uses /by, not /from or /to. Try: deadline return book /by 2019-12-02",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventNameMissingBeforeFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event /from 2019-12-02 /to 2019-12-03"));
+        assertEquals(
+                "An event needs a quest name before /from. "
+                        + "Try: event meeting /from 2019-12-02 1400 /to 2019-12-02 1600",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parse_eventPipeInFrom_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parse(
+                "event meeting /from 2019|12-02 /to 2019-12-03"));
+        assertEquals(
+                "A quest cannot contain '|'. The ravens use that mark in the save file.",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parseMarkNumber_validIndex_returnsNumber() throws WodanException {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        assertEquals(1, Parser.parseMarkNumber("1", tasks));
+        assertEquals(1, Parser.parseUnmarkNumber("1", tasks));
+    }
+
+    @Test
+    public void parseUnmarkNumber_emptyListAndMissing_exceptionThrown() {
+        WodanException empty = assertThrows(WodanException.class, () -> Parser.parseUnmarkNumber(
+                "1", new TaskList()));
+        assertEquals(
+                "There are no quests to unmark yet. Add one with todo, deadline, or event.",
+                empty.getMessage());
+        WodanException missing = assertThrows(WodanException.class, () -> Parser.parseUnmarkNumber(
+                "", new TaskList()));
+        assertEquals("Which quest should the ravens unmark? Try: unmark 1", missing.getMessage());
+    }
+
+    @Test
+    public void parseTagNumber_notANumberAndOutOfRange_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"));
+        WodanException notNumber = assertThrows(WodanException.class, () -> Parser.parseTagNumber(
+                "first school", tasks));
+        assertEquals("'first' is not a quest number. Try: tag 1 school", notNumber.getMessage());
+        WodanException range = assertThrows(WodanException.class, () -> Parser.parseTagNumber(
+                "3 school", tasks));
+        assertEquals(
+                "There is no quest 3. The ravens watch over 1 quest. Try a number from 1 to 1.",
+                range.getMessage());
+        WodanException missing = assertThrows(WodanException.class, () -> Parser.parseTagNumber(
+                "", tasks));
+        assertEquals("Which quest should the ravens brand? Try: tag 1 school", missing.getMessage());
+    }
+
+    @Test
+    public void parseOnDate_invalidDate_exceptionThrown() {
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseOnDate(
+                "not-a-date"));
+        assertEquals(
+                "The ravens cannot read 'not-a-date'. Try: 2026-08-26 or 08/26/2019 1800",
+                ex.getMessage());
+    }
+
+    @Test
+    public void parseDeleteNumber_outOfRangePlural_exceptionThrown() {
+        TaskList tasks = new TaskList();
+        tasks.add(new Todo("a"), new Todo("b"));
+        WodanException ex = assertThrows(WodanException.class, () -> Parser.parseDeleteNumber(
+                "5", tasks));
+        assertEquals(
+                "There is no quest 5. The ravens watch over 2 quests. Try a number from 1 to 2.",
+                ex.getMessage());
     }
 
     private Task addedTask(String command) throws WodanException {

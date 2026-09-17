@@ -28,4 +28,23 @@ public class DeadlineTest {
         assertEquals("[D][ ] return book (by: Oct 15 2019)", deadline.toString());
         assertEquals("D | 0 | return book | 2019-10-15 | general", deadline.toStorageString());
     }
+
+    @Test
+    public void getDueAtAndHasSameDetails_sameWhenAndDescription() throws WodanException {
+        Deadline first = new Deadline("return book", TaskDateTime.parse("2019-12-02 1800"));
+        Deadline second = new Deadline("return book", TaskDateTime.parse("2019-12-02 1800"));
+        Deadline otherWhen = new Deadline("return book", TaskDateTime.parse("2019-12-03"));
+        assertEquals(LocalDate.of(2019, 12, 2), first.getDueAt().toLocalDate());
+        assertTrue(first.hasSameDetails(second));
+        assertFalse(first.hasSameDetails(otherWhen));
+        assertFalse(first.hasSameDetails(new Todo("return book")));
+    }
+
+    @Test
+    public void toStorageString_markedDeadline_oneFlag() throws WodanException {
+        Deadline deadline = new Deadline("return book", TaskDateTime.parse("2019-10-15"));
+        deadline.markAsDone();
+        assertEquals("[D][X] return book (by: Oct 15 2019)", deadline.toString());
+        assertEquals("D | 1 | return book | 2019-10-15 | general", deadline.toStorageString());
+    }
 }

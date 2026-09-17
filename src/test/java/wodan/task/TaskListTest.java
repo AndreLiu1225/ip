@@ -16,6 +16,16 @@ import wodan.WodanException;
  */
 public class TaskListTest {
     @Test
+    public void isEmptyAndSize_afterAdd_falseAndCount() {
+        TaskList tasks = new TaskList();
+        assertTrue(tasks.isEmpty());
+        assertEquals(0, tasks.size());
+        tasks.add(new Todo("a"));
+        assertFalse(tasks.isEmpty());
+        assertEquals(1, tasks.size());
+    }
+
+    @Test
     public void addAndDelete_updatesSizeAndOrder() {
         TaskList tasks = new TaskList();
         Todo first = new Todo("first");
@@ -121,5 +131,19 @@ public class TaskListTest {
         TaskList tasks = new TaskList();
         tasks.add(new Todo("read song"));
         assertTrue(tasks.taskNumbersMatching("book").isEmpty());
+    }
+
+    @Test
+    public void getTasks_returnsLiveList_sameOrder() {
+        TaskList tasks = new TaskList();
+        Todo todo = new Todo("a");
+        tasks.add(todo);
+        assertEquals(todo, tasks.getTasks().get(0));
+        assertEquals(1, tasks.getTasks().size());
+    }
+
+    @Test
+    public void categoryNames_emptyList_empty() {
+        assertTrue(new TaskList().categoryNames().isEmpty());
     }
 }

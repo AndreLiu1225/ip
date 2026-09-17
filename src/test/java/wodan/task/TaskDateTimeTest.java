@@ -100,4 +100,43 @@ public class TaskDateTimeTest {
     public void formatDate_englishMonth() {
         assertEquals("Oct 15 2019", TaskDateTime.formatDate(LocalDate.of(2019, 10, 15)));
     }
+
+    @Test
+    public void parse_isoDateTimeWithColon_hasTime() throws WodanException {
+        TaskDateTime value = TaskDateTime.parse("2019-12-02 18:00");
+        assertTrue(value.hasTime());
+        assertEquals(LocalDateTime.of(2019, 12, 2, 18, 0), value.toLocalDateTime());
+    }
+
+    @Test
+    public void parse_dayFirstDateTimeHHmm_hasTime() throws WodanException {
+        TaskDateTime value = TaskDateTime.parse("2/12/2019 1800");
+        assertEquals(LocalDateTime.of(2019, 12, 2, 18, 0), value.toLocalDateTime());
+    }
+
+    @Test
+    public void hasSameValue_sameInstantAndTimeFlag() throws WodanException {
+        TaskDateTime withTime = TaskDateTime.parse("2019-12-02 0000");
+        TaskDateTime dateOnly = TaskDateTime.parse("2019-12-02");
+        assertTrue(withTime.hasSameValue(TaskDateTime.parse("2019-12-02 0000")));
+        assertFalse(withTime.hasSameValue(dateOnly));
+        assertFalse(dateOnly.hasTime());
+    }
+
+    @Test
+    public void parse_februaryThirty_exceptionThrown() {
+        assertThrows(WodanException.class, () -> TaskDateTime.parse("2019-02-30"));
+    }
+
+    @Test
+    public void parse_isoDateTimeWithSeconds_hasTime() throws WodanException {
+        TaskDateTime value = TaskDateTime.parse("2019-12-02T18:00:00");
+        assertTrue(value.hasTime());
+        assertEquals(LocalDateTime.of(2019, 12, 2, 18, 0), value.toLocalDateTime());
+    }
+
+    @Test
+    public void parseStorage_invalidIsoT_null() {
+        assertNull(TaskDateTime.parseStorage("2019-12-02Tnot-a-time"));
+    }
 }

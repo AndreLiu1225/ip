@@ -123,4 +123,25 @@ public class TodoTest {
         todo.markAsDone();
         assertFalse(todo.occursOn(LocalDate.of(2019, 12, 2)));
     }
+
+    @Test
+    public void hasSameDetails_sameDescription_ignoresDoneAndNull() {
+        Todo first = new Todo("borrow book");
+        Todo second = new Todo("borrow book");
+        second.markAsDone();
+        second.setCategory("school");
+        assertTrue(first.hasSameDetails(second));
+        assertFalse(first.hasSameDetails(new Todo("other")));
+        assertFalse(first.hasSameDetails(null));
+    }
+
+    @Test
+    public void isDoneAndHasDescriptionContaining_togglesAndIgnoresCase() {
+        Todo todo = new Todo("Borrow Book");
+        assertFalse(todo.isDone());
+        todo.markAsDone();
+        assertTrue(todo.isDone());
+        assertTrue(todo.hasDescriptionContaining("book"));
+        assertFalse(todo.hasDescriptionContaining("2019"));
+    }
 }

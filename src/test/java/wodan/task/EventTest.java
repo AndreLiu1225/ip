@@ -44,4 +44,34 @@ public class EventTest {
         assertEquals("E | 0 | meeting | 2019-12-02T14:00 | 2019-12-02T16:00 | general",
                 event.toStorageString());
     }
+
+    @Test
+    public void gettersAndHasSameDetails_sameRange() throws WodanException {
+        Event first = new Event("meeting",
+                TaskDateTime.parse("2019-12-02 1400"),
+                TaskDateTime.parse("2019-12-02 1600"));
+        Event second = new Event("meeting",
+                TaskDateTime.parse("2019-12-02 1400"),
+                TaskDateTime.parse("2019-12-02 1600"));
+        Event otherEnd = new Event("meeting",
+                TaskDateTime.parse("2019-12-02 1400"),
+                TaskDateTime.parse("2019-12-02 1700"));
+        assertEquals("Dec 02 2019, 2:00pm", first.getStartAt().toDisplayString());
+        assertEquals("Dec 02 2019, 4:00pm", first.getEndAt().toDisplayString());
+        Event otherName = new Event("other",
+                TaskDateTime.parse("2019-12-02 1400"),
+                TaskDateTime.parse("2019-12-02 1600"));
+        assertTrue(first.hasSameDetails(second));
+        assertFalse(first.hasSameDetails(otherEnd));
+        assertFalse(first.hasSameDetails(otherName));
+        assertFalse(Event.isValidRange(
+                TaskDateTime.parse("2019-12-02 1600"),
+                TaskDateTime.parse("2019-12-02 1400")));
+        assertFalse(Event.isValidRange(
+                TaskDateTime.parse("2019-12-03"),
+                TaskDateTime.parse("2019-12-02")));
+        first.markAsDone();
+        assertEquals("E | 1 | meeting | 2019-12-02T14:00 | 2019-12-02T16:00 | general",
+                first.toStorageString());
+    }
 }
