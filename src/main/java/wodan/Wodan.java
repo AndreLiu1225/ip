@@ -25,6 +25,7 @@ public class Wodan {
     private final Ui ui;
     private final String startMessage;
     private boolean isExit;
+    private boolean wasError;
 
     /**
      * Creates a chatbot that stores tasks in {@code data/wodan.txt}.
@@ -54,6 +55,7 @@ public class Wodan {
         tasks = loadedTasks;
         startMessage = loadMessage;
         isExit = false;
+        wasError = false;
     }
 
     /**
@@ -89,14 +91,19 @@ public class Wodan {
     /**
      * Returns the greeting shown when the graphical UI starts.
      *
-     * @return Welcome text, plus a load warning if the save file could not be read cleanly.
+     * @return Welcome text.
      */
     public String getGreeting() {
-        String greeting = Ui.getGreetingText();
-        if (startMessage == null) {
-            return greeting;
-        }
-        return greeting + "\n\n" + startMessage;
+        return Ui.getGreetingText();
+    }
+
+    /**
+     * Returns a warning or error from loading the save file, or {@code null} if loading was clean.
+     *
+     * @return Load warning text, or {@code null}.
+     */
+    public String getLoadMessage() {
+        return startMessage;
     }
 
     /**
@@ -113,9 +120,11 @@ public class Wodan {
             Command command = Parser.parse(input);
             command.execute(tasks, replyUi, storage);
             isExit = command.isExit();
+            wasError = false;
             return stripLeadingIndent(buffer.toString(StandardCharsets.UTF_8));
         } catch (WodanException e) {
             isExit = false;
+            wasError = true;
             return e.getMessage();
         }
     }
@@ -127,6 +136,15 @@ public class Wodan {
      */
     public boolean isExit() {
         return isExit;
+    }
+
+    /**
+     * Returns whether the last {@code getResponse} call was an error.
+     *
+     * @return {@code true} if the GUI should style the last reply as an error.
+     */
+    public boolean wasError() {
+        return wasError;
     }
 
     /**
