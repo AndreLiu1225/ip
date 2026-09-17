@@ -21,6 +21,7 @@ Wodan calls your tasks *quests*. The ravens remember them between sessions.
   - [Viewing quests on a date: `on`](#viewing-quests-on-a-date-on)
   - [Tagging a quest: `tag`](#tagging-a-quest-tag)
   - [Exiting: `bye`](#exiting-bye)
+  - [When Wodan refuses a command](#when-wodan-refuses-a-command)
   - [Saving the data](#saving-the-data)
   - [Editing the data file](#editing-the-data-file)
 - [Dates and times](#dates-and-times)
@@ -61,9 +62,12 @@ You can resize the window; long replies wrap to the new width.
   replace `DESCRIPTION` with `borrow book`.
 - Command words are case-insensitive: `todo`, `Todo`, and `TODO` are the same.
 - Extra words after commands that take no parameters (`list`, `bye`) are ignored.
+- `mark`, `unmark`, and `delete` take **only** the quest number. Extra words are refused.
 - Task numbers (`INDEX`) are the **1-based numbers shown by `list`**. They stay the same
   even when `list` groups quests under category headings.
 - Do not use `|` in a description, date, or tag. Wodan reserves that character for the save file.
+- Repeated or unexpected date markers (`/by`, `/from`, `/to`) are refused. See
+  [When Wodan refuses a command](#when-wodan-refuses-a-command).
 
 ### Adding a todo: `todo`
 
@@ -86,6 +90,9 @@ You have accepted the following quest:
 
 `[T]` means todo. `[ ]` means not done yet.
 
+A todo has no date. Leave out `/by`, `/from`, and `/to`. Adding the same todo again
+(same description) is refused.
+
 ### Adding a deadline: `deadline`
 
 Adds a quest that must be finished by a given date (and optional time).
@@ -94,6 +101,8 @@ Format: `deadline DESCRIPTION /by WHEN`
 
 - `WHEN` is a [date or date-time](#dates-and-times).
 - The description must come before `/by`.
+- Use `/by` once. Do not use `/from` or `/to` on a deadline.
+- Adding the same deadline again (same description and due time) is refused.
 
 Examples:
 
@@ -118,7 +127,10 @@ Adds a quest with a start and an end.
 Format: `event DESCRIPTION /from START /to END`
 
 - `START` and `END` are each a [date or date-time](#dates-and-times).
-- The event cannot end before it starts.
+- Use `/from` and `/to` once each. Do not use `/by` on an event.
+- If you give a clock time, the end must be **after** the start. A date-only event
+  may start and end on the same calendar day.
+- Adding the same event again (same description, start, and end) is refused.
 
 Examples:
 
@@ -169,6 +181,7 @@ Marks the quest at `INDEX` as done and saves.
 Format: `mark INDEX`
 
 - `INDEX` must be a positive integer shown by `list`.
+- Do not add extra words after the number. `mark 1 now` is refused.
 
 Examples:
 
@@ -189,6 +202,8 @@ Marks the quest at `INDEX` as not done and saves.
 
 Format: `unmark INDEX`
 
+- Do not add extra words after the number.
+
 Examples:
 
 - `unmark 1`
@@ -206,6 +221,8 @@ Removes the quest at `INDEX` and saves. Later quests keep their remaining number
 fresh `list`.
 
 Format: `delete INDEX`
+
+- Do not add extra words after the number.
 
 Examples:
 
@@ -303,6 +320,23 @@ Expected reply: `So it is written. Farewell, wanderer.`
 
 The window closes shortly after that message.
 
+### When Wodan refuses a command
+
+Refused commands show as rust-coloured error cards. The list does not change.
+
+| Situation | What to do |
+| --- | --- |
+| Same quest already on the list (same type, description, and dates) | Change the name or times, or `list` to find the existing quest |
+| `/by` on a todo, or `/from` / `/to` on a deadline, or `/by` on an event | Use only the markers for that command |
+| `/by`, `/from`, or `/to` written twice | Write each marker once |
+| Extra words after `mark`, `unmark`, or `delete` | Send only the command and the number, for example `mark 1` |
+| Timed event whose end is not after its start | Use a later end time |
+| Empty or unknown command | Use a command from [Command summary](#command-summary) |
+| Missing name, date, or number | Follow the `Try: …` hint in the error card |
+
+Spaces at the start or end of a line, and repeated spaces in the middle, are collapsed
+before the command is read.
+
 ### Saving the data
 
 Wodan saves after every command that changes quests (`todo`, `deadline`, `event`,
@@ -312,6 +346,9 @@ The file is `[folder you ran the JAR from]/data/wodan.txt`.
 
 On the next launch, Wodan loads that file. If some lines are corrupted, readable quests
 are still loaded and Wodan warns that the ravens skipped the rest.
+
+If the save path is not a writable file (for example it is a folder, or the ravens
+are denied access), Wodan reports the problem and does not update the list on disk.
 
 ### Editing the data file
 
@@ -356,6 +393,15 @@ the working directory, not inside the JAR.
 `find` numbers its own result list from 1. `mark`, `unmark`, `delete`, and `tag` always
 use the numbers from `list` (and from `on`). Run `list` before those commands if you
 are unsure.
+
+**Why was my new quest refused?**
+Wodan will not record a second copy of the same quest. Type, description, and dates
+must all match for it to count as a duplicate; done status and tag are ignored.
+See [When Wodan refuses a command](#when-wodan-refuses-a-command).
+
+**Why did `mark 1 extra` fail?**
+`mark`, `unmark`, and `delete` take only the quest number. Extra words are treated as
+a mistake, not as a comment.
 
 ## Command summary
 
